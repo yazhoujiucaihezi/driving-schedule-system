@@ -1,8 +1,8 @@
 package com.drivingschool.reservation.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.driving.common.result.Result;
-import com.driving.common.utils.SecurityContextUtils;
+import com.box.common.result.Result;
+import com.box.common.utils.SecurityContextUtils;
 import com.drivingschool.reservation.dto.ReservationCancelDTO;
 import com.drivingschool.reservation.dto.ReservationCreateDTO;
 import com.drivingschool.reservation.dto.ReservationQueryDTO;

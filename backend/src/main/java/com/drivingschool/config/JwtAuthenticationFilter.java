@@ -1,8 +1,8 @@
 package com.drivingschool.config;
 
-import com.driving.common.utils.JwtUserDetails;
-import com.driving.common.utils.JwtUtils;
-import com.driving.common.utils.SecurityContextUtils;
+import com.box.common.utils.JwtUserDetails;
+import com.box.common.utils.JwtUtils;
+import com.box.common.utils.SecurityContextUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

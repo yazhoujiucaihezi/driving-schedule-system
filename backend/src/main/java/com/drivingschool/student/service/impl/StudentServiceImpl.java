@@ -2,7 +2,7 @@ package com.drivingschool.student.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.driving.common.exception.BusinessException;
+import com.box.common.exception.BusinessException;
 import com.drivingschool.coach.entity.Coach;
 import com.drivingschool.coach.mapper.CoachMapper;
 import com.drivingschool.student.dto.StudentCreateDTO;

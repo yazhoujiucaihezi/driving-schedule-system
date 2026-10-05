@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.drivingschool.coach.entity.Coach;
 import com.drivingschool.coach.mapper.CoachMapper;
-import com.driving.common.exception.BusinessException;
+import com.box.common.exception.BusinessException;
 import com.drivingschool.entity.SysUser;
 import com.drivingschool.mapper.SysUserMapper;
 import com.drivingschool.student.entity.Student;

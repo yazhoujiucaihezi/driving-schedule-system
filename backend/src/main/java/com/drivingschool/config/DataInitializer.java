@@ -20,8 +20,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
  * 测试数据初始化器 — 仅在 dev 环境下运行
  * <p>

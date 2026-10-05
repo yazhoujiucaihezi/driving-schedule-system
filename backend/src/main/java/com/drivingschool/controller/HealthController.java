@@ -1,6 +1,6 @@
 package com.drivingschool.controller;
 
-import com.driving.common.result.Result;
+import com.box.common.result.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

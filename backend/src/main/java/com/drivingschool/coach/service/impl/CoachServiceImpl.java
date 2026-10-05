@@ -10,7 +10,7 @@ import com.drivingschool.coach.mapper.CoachMapper;
 import com.drivingschool.coach.service.CoachService;
 import com.drivingschool.coach.vo.CoachSimpleVO;
 import com.drivingschool.coach.vo.CoachVO;
-import com.driving.common.exception.BusinessException;
+import com.box.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;

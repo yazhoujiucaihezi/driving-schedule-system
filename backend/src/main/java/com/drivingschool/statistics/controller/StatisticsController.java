@@ -1,7 +1,7 @@
 package com.drivingschool.statistics.controller;
 
-import com.driving.common.result.Result;
-import com.driving.common.utils.SecurityContextUtils;
+import com.box.common.result.Result;
+import com.box.common.utils.SecurityContextUtils;
 import com.drivingschool.statistics.service.StatisticsService;
 import com.drivingschool.statistics.vo.*;
 import lombok.RequiredArgsConstructor;

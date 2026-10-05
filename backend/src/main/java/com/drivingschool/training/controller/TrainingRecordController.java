@@ -1,8 +1,8 @@
 package com.drivingschool.training.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.driving.common.result.Result;
-import com.driving.common.utils.SecurityContextUtils;
+import com.box.common.result.Result;
+import com.box.common.utils.SecurityContextUtils;
 import com.drivingschool.training.dto.TrainingRecordQueryDTO;
 import com.drivingschool.training.service.TrainingRecordService;
 import com.drivingschool.training.vo.TrainingRecordVO;

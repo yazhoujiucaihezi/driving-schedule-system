@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.drivingschool.coach.entity.Coach;
 import com.drivingschool.coach.mapper.CoachMapper;
 import com.drivingschool.common.constant.RedisKeyConstants;
-import com.driving.common.exception.BusinessException;
+import com.box.common.exception.BusinessException;
 import com.drivingschool.reservation.dto.ReservationCancelDTO;
 import com.drivingschool.reservation.dto.ReservationCreateDTO;
 import com.drivingschool.reservation.dto.ReservationQueryDTO;
