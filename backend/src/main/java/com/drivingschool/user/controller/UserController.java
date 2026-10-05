@@ -1,7 +1,7 @@
 package com.drivingschool.user.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.common.result.Result;
+import com.driving.common.result.Result;
 import com.drivingschool.user.dto.ResetPasswordDTO;
 import com.drivingschool.user.dto.UserCreateDTO;
 import com.drivingschool.user.dto.UserQueryDTO;

@@ -1,8 +1,8 @@
 package com.drivingschool.vehicle.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.common.result.Result;
-import com.drivingschool.common.utils.SecurityContextUtils;
+import com.driving.common.result.Result;
+import com.driving.common.utils.SecurityContextUtils;
 import com.drivingschool.vehicle.dto.VehicleCreateDTO;
 import com.drivingschool.vehicle.dto.VehicleQueryDTO;
 import com.drivingschool.vehicle.dto.VehicleUpdateDTO;

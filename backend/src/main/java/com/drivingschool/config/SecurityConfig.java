@@ -1,7 +1,7 @@
 package com.drivingschool.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.drivingschool.common.result.Result;
+import com.driving.common.result.Result;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

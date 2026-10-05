@@ -1,8 +1,8 @@
 package com.drivingschool.schedule.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.common.result.Result;
-import com.drivingschool.common.utils.SecurityContextUtils;
+import com.driving.common.result.Result;
+import com.driving.common.utils.SecurityContextUtils;
 import com.drivingschool.schedule.dto.ScheduleBatchCreateDTO;
 import com.drivingschool.schedule.dto.ScheduleCreateDTO;
 import com.drivingschool.schedule.dto.ScheduleQueryDTO;

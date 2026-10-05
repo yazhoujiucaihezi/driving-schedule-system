@@ -13,7 +13,7 @@
     </parent>
 
     <!-- 项目基本信息 -->
-    <groupId>com.drivingschool</groupId>
+    <groupId>com.box</groupId>
     <artifactId>driving-school-schedule</artifactId>
     <version>1.0.0</version>
     <name>驾校学员练车预约与调度管理系统</name>
@@ -21,13 +21,46 @@
 
     <!-- Java 版本 -->
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <redisson.version>3.24.3</redisson.version>
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <jjwt.version>0.12.3</jjwt.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Cloud 官方 BOM：统一管理 Spring Cloud 组件版本 -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spring Cloud Alibaba 官方 BOM：统一管理 Nacos 等组件版本 -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.box</groupId>
+                <artifactId>driving-common</artifactId>
+                <version>1.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+        <!-- Nacos 服务发现与注册 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
         <!-- Spring Boot Web 启动器 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -104,6 +137,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.box</groupId>
+            <artifactId>driving-common</artifactId>
         </dependency>
     </dependencies>
 
