@@ -52,7 +52,23 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.box</groupId>
+                <artifactId>driving-common</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.box</groupId>
+                <artifactId>driving-common-web</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.box</groupId>
+                <artifactId>driving-api</artifactId>
+                <version>1.0</version>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <dependencies>
@@ -70,5 +86,6 @@
         <module>driving-api</module>
         <module>driving-auth-service</module>
         <module>driving-gateway</module>
+        <module>driving-common-web</module>
     </modules>
 </project>
