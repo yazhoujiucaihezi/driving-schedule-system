@@ -1,0 +1,4 @@
+com\box\common\web\config\CommonWebAutoConfiguration.class
+com\box\common\web\interceptor\UserContextInterceptor.class
+com\box\common\web\config\SecurityConfig.class
+com\box\common\web\config\WebConfig.class
