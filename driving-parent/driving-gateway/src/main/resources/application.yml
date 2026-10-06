@@ -13,7 +13,7 @@ spring:
         - id: user-service
           uri: lb://driving-user-service     # lb = load balance
           predicates:
-            - Path=/api/user/**
+            - Path=/api/users/**
         - id: auth-service
           uri: lb://driving-auth-service
           predicates:
