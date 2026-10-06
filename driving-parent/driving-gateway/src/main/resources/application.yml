@@ -1,0 +1,20 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: driving-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.181.128:8848
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://driving-user-service     # lb = load balance
+          predicates:
+            - Path=/api/user/**
+        - id: auth-service
+          uri: lb://driving-auth-service
+          predicates:
+            - Path=/api/auth/**

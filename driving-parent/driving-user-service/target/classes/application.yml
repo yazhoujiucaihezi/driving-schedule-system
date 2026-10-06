@@ -1,0 +1,16 @@
+server:
+  port: 18080
+
+spring:
+  application:
+    name: driving-user-service
+
+  datasource:
+    url: jdbc:mysql://192.168.181.128:3306/driving_school_schedule?...
+    username: root
+    password: 123
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.181.128:8848
