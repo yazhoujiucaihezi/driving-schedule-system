@@ -18,6 +18,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         String userId = request.getHeader("X-User-Id");
         String role = request.getHeader("X-User-Role");
+        System.out.println("=== X-User-Id: " + userId + ", X-User-Role: " + role);
 
         if (userId != null && role != null) {
 

@@ -44,6 +44,7 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("role", role)
                 .claim("relatedId", relatedId)

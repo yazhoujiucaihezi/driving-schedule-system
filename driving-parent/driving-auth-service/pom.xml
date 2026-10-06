@@ -47,6 +47,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.box</groupId>
+            <artifactId>driving-common-web</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

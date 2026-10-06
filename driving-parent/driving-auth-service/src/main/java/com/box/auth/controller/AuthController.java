@@ -4,7 +4,6 @@ import com.box.auth.service.AuthService;
 import com.box.auth.vo.LoginResponseVO;
 import com.box.auth.vo.UserInfoVO;
 import com.box.common.result.Result;
-import com.box.common.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +43,7 @@ public class AuthController {
      * </p>
      */
     @GetMapping("/me")
-    public Result<UserInfoVO> me() {
-        Long userId = SecurityContextUtils.getCurrentUserId();
+    public Result<UserInfoVO> me(@RequestHeader("X-User-Id") Long userId) {
         UserInfoVO vo = authService.getCurrentUser(userId);
         return Result.success(vo);
     }

@@ -1,10 +1,11 @@
 package com.box.common.web.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import com.box.common.web.interceptor.UserContextInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
-@ComponentScan("com.box.common.web")   // 扫这个包下的所有 Bean
+@Import({SecurityConfig.class, WebConfig.class, UserContextInterceptor.class})
 public class CommonWebAutoConfiguration {
 
 }
