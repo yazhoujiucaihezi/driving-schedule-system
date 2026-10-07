@@ -1,6 +1,7 @@
 package com.box.student.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.box.api.student.StudentDTO;
 import com.box.student.dto.StudentCreateDTO;
 import com.box.student.dto.StudentQueryDTO;
 import com.box.student.dto.StudentUpdateDTO;
@@ -16,4 +17,8 @@ public interface StudentService {
     StudentVO update(Long id, StudentUpdateDTO dto);
     void updateStatus(Long id, String status);
     List<StudentSimpleVO> simpleList();
+
+    StudentDTO getDTObyId(Long id);
+
+    List<StudentDTO> getDTOByUsername(String username);
 }

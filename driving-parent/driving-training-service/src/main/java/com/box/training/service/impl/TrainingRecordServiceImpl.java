@@ -1,22 +1,24 @@
-package com.drivingschool.training.service.impl;
+package com.box.training.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.coach.entity.Coach;
-import com.drivingschool.coach.mapper.CoachMapper;
-import com.drivingschool.student.entity.Student;
-import com.drivingschool.student.mapper.StudentMapper;
-import com.drivingschool.training.dto.TrainingRecordQueryDTO;
-import com.drivingschool.training.entity.TrainingRecord;
-import com.drivingschool.training.mapper.TrainingRecordMapper;
-import com.drivingschool.training.service.TrainingRecordService;
-import com.drivingschool.training.vo.TrainingRecordVO;
-import com.drivingschool.vehicle.entity.Vehicle;
-import com.drivingschool.vehicle.mapper.VehicleMapper;
+import com.box.api.coach.CoachDTO;
+import com.box.api.coach.CoachFeignClient;
+import com.box.api.student.StudentDTO;
+import com.box.api.student.StudentFeignClient;
+import com.box.api.vehicle.VehicleDTO;
+import com.box.api.vehicle.VehicleFeignClient;
+import com.box.common.result.Result;
+import com.box.training.dto.TrainingRecordQueryDTO;
+import com.box.training.entity.TrainingRecord;
+import com.box.training.mapper.TrainingRecordMapper;
+import com.box.training.service.TrainingRecordService;
+import com.box.training.vo.TrainingRecordVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,9 +26,9 @@ import java.util.stream.Collectors;
 public class TrainingRecordServiceImpl implements TrainingRecordService {
 
     private final TrainingRecordMapper trainingRecordMapper;
-    private final StudentMapper studentMapper;
-    private final CoachMapper coachMapper;
-    private final VehicleMapper vehicleMapper;
+    private final CoachFeignClient coachFeignClient;
+    private final StudentFeignClient studentFeignClient;
+    private final VehicleFeignClient vehicleFeignClient;
 
     @Override
     public Page<TrainingRecordVO> myRecords(Long studentId, Integer page, Integer size) {
@@ -49,8 +51,8 @@ public class TrainingRecordServiceImpl implements TrainingRecordService {
         if (dto.getStartDate() != null) w.ge(TrainingRecord::getTrainingDate, dto.getStartDate());
         if (dto.getEndDate() != null) w.le(TrainingRecord::getTrainingDate, dto.getEndDate());
         if (StringUtils.hasText(dto.getStudentName())) {
-            var students = studentMapper.selectList(new LambdaQueryWrapper<Student>().like(Student::getName, dto.getStudentName()));
-            if (!students.isEmpty()) w.in(TrainingRecord::getStudentId, students.stream().map(Student::getId).collect(Collectors.toList()));
+            Result<List<StudentDTO>> students = studentFeignClient.selectList(dto.getStudentName());
+            if (students.getData() != null && !students.getData().isEmpty()) w.in(TrainingRecord::getStudentId, students.getData().stream().map(StudentDTO::getId).collect(Collectors.toList()));
             else w.eq(TrainingRecord::getStudentId, -1L);
         }
         w.orderByDesc(TrainingRecord::getCreateTime);
@@ -72,12 +74,12 @@ public class TrainingRecordServiceImpl implements TrainingRecordService {
         vo.setTimeSlot(r.getTimeSlot()); vo.setTrainingContent(r.getTrainingContent());
         vo.setResult(r.getResult()); vo.setCoachComment(r.getCoachComment());
         vo.setCreateTime(r.getCreateTime());
-        Student s = studentMapper.selectById(r.getStudentId());
-        if (s != null) vo.setStudentName(s.getName());
-        Coach c = coachMapper.selectById(r.getCoachId());
+        Result<StudentDTO> s = studentFeignClient.getById(r.getStudentId());
+        if (s != null) vo.setStudentName(s.getData().getName());
+        CoachDTO c = coachFeignClient.getCoachById(r.getCoachId());
         if (c != null) vo.setCoachName(c.getName());
         if (r.getVehicleId() != null) {
-            Vehicle v = vehicleMapper.selectById(r.getVehicleId());
+            VehicleDTO v = vehicleFeignClient.getById(r.getVehicleId());
             if (v != null) vo.setPlateNumber(v.getPlateNumber());
         }
         return vo;

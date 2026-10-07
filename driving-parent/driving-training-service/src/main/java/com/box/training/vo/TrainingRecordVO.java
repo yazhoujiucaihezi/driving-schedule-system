@@ -1,4 +1,4 @@
-package com.drivingschool.training.vo;
+package com.box.training.vo;
 
 import lombok.Data;
 import java.time.LocalDate;

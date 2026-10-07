@@ -7,4 +7,5 @@ import com.box.student.entity.Student;
 
 @Mapper
 public interface StudentMapper extends BaseMapper<Student> {
+
 }

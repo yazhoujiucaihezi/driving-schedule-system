@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Data
-@TableName("com/box/student")
+@TableName("student")
 public class Student {
 
     @TableId(type = IdType.AUTO)

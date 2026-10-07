@@ -1,4 +1,4 @@
-package com.drivingschool.training.dto;
+package com.box.training.dto;
 
 import lombok.Data;
 import java.time.LocalDate;

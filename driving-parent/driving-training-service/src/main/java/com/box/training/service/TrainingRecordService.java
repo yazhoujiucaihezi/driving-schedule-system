@@ -1,8 +1,8 @@
-package com.drivingschool.training.service;
+package com.box.training.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.training.dto.TrainingRecordQueryDTO;
-import com.drivingschool.training.vo.TrainingRecordVO;
+import com.box.training.dto.TrainingRecordQueryDTO;
+import com.box.training.vo.TrainingRecordVO;
 
 public interface TrainingRecordService {
     /** 学员查询我的练车记录 */

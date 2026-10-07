@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.api.coach.CoachDTO;
 import com.box.api.coach.CoachFeignClient;
+import com.box.api.student.StudentDTO;
 import com.box.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -143,6 +144,26 @@ public class StudentServiceImpl implements StudentService {
                     return vo;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public StudentDTO getDTObyId(Long id) {
+        Student student = studentMapper.selectById(id);
+        StudentDTO studentDTO = new StudentDTO();
+        BeanUtils.copyProperties(student, studentDTO);
+        return studentDTO;
+    }
+
+    @Override
+    public List<StudentDTO> getDTOByUsername(String username) {
+        LambdaQueryWrapper<Student> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(Student::getName, username);
+        List<Student> list = studentMapper.selectList(wrapper);
+        return list.stream().map(s -> {
+            StudentDTO dto = new StudentDTO();
+            BeanUtils.copyProperties(s, dto);
+            return dto;
+        }).toList();
     }
 
     private Student findStudent(Long id) {

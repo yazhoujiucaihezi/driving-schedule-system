@@ -34,3 +34,7 @@ spring:
           uri: lb://driving-schedule-service
           predicates:
             - Path=/api/schedules/**
+        - id: training-record-service
+          uri: lb://driving-training-service
+          predicates:
+            - Path=/api/training-records/**
