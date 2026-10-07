@@ -26,3 +26,7 @@ spring:
           uri: lb://driving-student-service
           predicates:
             - Path=/api/students/**
+        - id: vehicle-service
+          uri: lb://driving-vehicle-service
+          predicates:
+            - Path=/api/vehicles/**

@@ -21,7 +21,7 @@ export default defineConfig({
     // 解决开发时前后端跨域问题
     proxy: {
       '/api': {
-        target: 'http://localhost:28081',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },
