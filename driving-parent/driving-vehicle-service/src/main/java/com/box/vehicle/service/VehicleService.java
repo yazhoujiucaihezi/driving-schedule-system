@@ -1,6 +1,7 @@
 package com.box.vehicle.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.box.api.vehicle.VehicleDTO;
 import com.box.vehicle.dto.VehicleCreateDTO;
 import com.box.vehicle.dto.VehicleQueryDTO;
 import com.box.vehicle.dto.VehicleUpdateDTO;
@@ -16,4 +17,8 @@ public interface VehicleService {
     VehicleVO update(Long id, VehicleUpdateDTO dto);
     void updateStatus(Long id, String status);
     List<VehicleSimpleVO> simpleList();
+
+    VehicleDTO getVehicleDTOById(Long id);
+
+    VehicleDTO getVehicleDTOByCoachId(Long coachId, String status);
 }

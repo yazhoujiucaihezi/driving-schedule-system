@@ -1,12 +1,12 @@
 package com.box.schedule.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.schedule.dto.ScheduleBatchCreateDTO;
-import com.drivingschool.schedule.dto.ScheduleCreateDTO;
-import com.drivingschool.schedule.dto.ScheduleQueryDTO;
-import com.drivingschool.schedule.dto.ScheduleUpdateDTO;
-import com.drivingschool.schedule.vo.ScheduleAvailableVO;
-import com.drivingschool.schedule.vo.ScheduleVO;
+import com.box.schedule.dto.ScheduleBatchCreateDTO;
+import com.box.schedule.dto.ScheduleCreateDTO;
+import com.box.schedule.dto.ScheduleQueryDTO;
+import com.box.schedule.dto.ScheduleUpdateDTO;
+import com.box.schedule.vo.ScheduleAvailableVO;
+import com.box.schedule.vo.ScheduleVO;
 
 import java.time.LocalDate;
 import java.util.List;

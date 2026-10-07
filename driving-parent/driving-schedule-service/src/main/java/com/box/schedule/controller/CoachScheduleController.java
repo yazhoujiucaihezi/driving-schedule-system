@@ -3,13 +3,13 @@ package com.box.schedule.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
-import com.drivingschool.schedule.dto.ScheduleBatchCreateDTO;
-import com.drivingschool.schedule.dto.ScheduleCreateDTO;
-import com.drivingschool.schedule.dto.ScheduleQueryDTO;
-import com.drivingschool.schedule.dto.ScheduleUpdateDTO;
-import com.drivingschool.schedule.service.CoachScheduleService;
-import com.drivingschool.schedule.vo.ScheduleAvailableVO;
-import com.drivingschool.schedule.vo.ScheduleVO;
+import com.box.schedule.dto.ScheduleBatchCreateDTO;
+import com.box.schedule.dto.ScheduleCreateDTO;
+import com.box.schedule.dto.ScheduleQueryDTO;
+import com.box.schedule.dto.ScheduleUpdateDTO;
+import com.box.schedule.service.CoachScheduleService;
+import com.box.schedule.vo.ScheduleAvailableVO;
+import com.box.schedule.vo.ScheduleVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 教练排班管理控制器
@@ -34,7 +35,7 @@ public class CoachScheduleController {
     @GetMapping
     public Result<Page<ScheduleVO>> list(ScheduleQueryDTO dto) {
         if ("COACH".equals(SecurityContextUtils.getCurrentUserRole())) {
-            dto.setCoachId(SecurityContextUtils.getCurrentUser().getRelatedId());
+            dto.setCoachId(Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId());
         }
         return Result.success(scheduleService.queryPage(dto));
     }

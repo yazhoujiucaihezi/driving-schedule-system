@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.api.coach.CoachDTO;
 import com.box.api.coach.CoachFeignClient;
+import com.box.api.vehicle.VehicleDTO;
 import com.box.common.exception.BusinessException;
 import com.box.vehicle.dto.VehicleCreateDTO;
 import com.box.vehicle.dto.VehicleQueryDTO;
@@ -123,6 +124,27 @@ public class VehicleServiceImpl implements VehicleService {
                     return vo;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public VehicleDTO getVehicleDTOById(Long id) {
+        Vehicle vehicle = vehicleMapper.selectById(id);
+        VehicleDTO dto = new VehicleDTO();
+        BeanUtils.copyProperties(vehicle, dto);
+        return dto;
+    }
+
+    @Override
+    public VehicleDTO getVehicleDTOByCoachId(Long coachId, String status) {
+        LambdaQueryWrapper<Vehicle> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Vehicle::getCoachId, coachId);
+        if (status != null) {
+            wrapper.eq(Vehicle::getStatus, status);
+        }
+        Vehicle vehicle = vehicleMapper.selectOne(wrapper);
+        VehicleDTO dto = new VehicleDTO();
+        BeanUtils.copyProperties(vehicle, dto);
+        return dto;
     }
 
     // ==================== 内部方法 ====================

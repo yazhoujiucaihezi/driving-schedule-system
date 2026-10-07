@@ -30,3 +30,7 @@ spring:
           uri: lb://driving-vehicle-service
           predicates:
             - Path=/api/vehicles/**
+        - id: schedule-service
+          uri: lb://driving-schedule-service
+          predicates:
+            - Path=/api/schedules/**

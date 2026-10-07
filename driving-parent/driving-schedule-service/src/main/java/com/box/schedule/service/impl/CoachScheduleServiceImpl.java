@@ -2,8 +2,20 @@ package com.box.schedule.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.box.api.coach.CoachDTO;
+import com.box.api.coach.CoachFeignClient;
+import com.box.api.vehicle.VehicleDTO;
+import com.box.api.vehicle.VehicleFeignClient;
+import com.box.common.exception.BusinessException;
+import com.box.schedule.dto.ScheduleBatchCreateDTO;
+import com.box.schedule.dto.ScheduleCreateDTO;
+import com.box.schedule.dto.ScheduleQueryDTO;
+import com.box.schedule.dto.ScheduleUpdateDTO;
+import com.box.schedule.entity.CoachSchedule;
 import com.box.schedule.mapper.CoachScheduleMapper;
 import com.box.schedule.service.CoachScheduleService;
+import com.box.schedule.vo.ScheduleAvailableVO;
+import com.box.schedule.vo.ScheduleVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +34,8 @@ import java.util.stream.Collectors;
 public class CoachScheduleServiceImpl implements CoachScheduleService {
 
     private final CoachScheduleMapper scheduleMapper;
-    private final VehicleMapper vehicleMapper;
+    private final CoachFeignClient coachFeignClient;
+    private final VehicleFeignClient vehicleFeignClient;
 
     @Override
     public Page<ScheduleVO> queryPage(ScheduleQueryDTO dto) {
@@ -51,7 +64,7 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public ScheduleVO create(ScheduleCreateDTO dto) {
         // 1. 校验教练
-        Coach coach = coachMapper.selectById(dto.getCoachId());
+        CoachDTO coach = coachFeignClient.getCoachById(dto.getCoachId());
         if (coach == null) throw new BusinessException("教练不存在");
         if (!"NORMAL".equals(coach.getStatus())) throw new BusinessException("教练已停用，不能创建排班");
 
@@ -61,7 +74,7 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         }
 
         // 3. 先校验教练重复，错误提示更符合业务语义
-        checkDuplicate(dto.getCoachId(), dto.getScheduleDate(), dto.getTimeSlot(), null);
+        checkDuplicate(dto.getCoachId(), dto.getScheduleDate(), dto.getTimeSlot());
 
         // 4. 再校验车辆冲突
         if (dto.getVehicleId() != null) {
@@ -124,7 +137,7 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         int created = 0, skipped = 0;
 
         for (Long coachId : dto.getCoachIds()) {
-            Coach coach = coachMapper.selectById(coachId);
+            CoachDTO coach = coachFeignClient.getCoachById(coachId);
             if (coach == null || !"NORMAL".equals(coach.getStatus())) { skipped++; continue; }
 
             for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
@@ -147,10 +160,7 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
 
                     // 自动绑定车辆
                     if (Boolean.TRUE.equals(dto.getAutoBindVehicle())) {
-                        Vehicle v = vehicleMapper.selectOne(new LambdaQueryWrapper<Vehicle>()
-                                .eq(Vehicle::getCoachId, coachId)
-                                .eq(Vehicle::getStatus, "NORMAL")
-                                .last("LIMIT 1"));
+                        VehicleDTO v = vehicleFeignClient.getOne(coachId, "NORMAL");
                         if (v != null) s.setVehicleId(v.getId());
                     }
 
@@ -180,10 +190,10 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
                     vo.setScheduleId(s.getId());
                     vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
                     // 填充教练名和车牌
-                    Coach c = coachMapper.selectById(s.getCoachId());
+                    CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
                     vo.setCoachName(c != null ? c.getName() : "未知");
                     if (s.getVehicleId() != null) {
-                        Vehicle v = vehicleMapper.selectById(s.getVehicleId());
+                        VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
                         vo.setPlateNumber(v != null ? v.getPlateNumber() : null);
                     }
                     return vo;
@@ -200,18 +210,17 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
     }
 
     private void validateVehicle(Long vehicleId) {
-        Vehicle v = vehicleMapper.selectById(vehicleId);
+        VehicleDTO v = vehicleFeignClient.getById(vehicleId);
         if (v == null) throw new BusinessException("车辆不存在");
         if (!"NORMAL".equals(v.getStatus())) throw new BusinessException("车辆当前不可用，不能绑定排班");
     }
 
     /** 检查教练是否在同时段已有排班 */
-    private void checkDuplicate(Long coachId, LocalDate date, String slot, Long excludeId) {
+    private void checkDuplicate(Long coachId, LocalDate date, String slot) {
         LambdaQueryWrapper<CoachSchedule> w = new LambdaQueryWrapper<CoachSchedule>()
                 .eq(CoachSchedule::getCoachId, coachId)
                 .eq(CoachSchedule::getScheduleDate, date)
                 .eq(CoachSchedule::getTimeSlot, slot);
-        if (excludeId != null) w.ne(CoachSchedule::getId, excludeId);
         if (scheduleMapper.selectCount(w) > 0) {
             throw new BusinessException("该教练当前时间段已有排班");
         }
@@ -233,10 +242,10 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         ScheduleVO vo = new ScheduleVO();
         BeanUtils.copyProperties(s, vo);
         vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
-        Coach c = coachMapper.selectById(s.getCoachId());
+        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
         vo.setCoachName(c != null ? c.getName() : "未知");
         if (s.getVehicleId() != null) {
-            Vehicle v = vehicleMapper.selectById(s.getVehicleId());
+            VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
             vo.setPlateNumber(v != null ? v.getPlateNumber() : null);
         }
         return vo;
