@@ -1,4 +1,4 @@
-package com.drivingschool.student.entity;
+package com.box.student.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Data
-@TableName("student")
+@TableName("com/box/student")
 public class Student {
 
     @TableId(type = IdType.AUTO)

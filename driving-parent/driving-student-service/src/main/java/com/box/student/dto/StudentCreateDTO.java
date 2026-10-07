@@ -1,4 +1,4 @@
-package com.drivingschool.student.dto;
+package com.box.student.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

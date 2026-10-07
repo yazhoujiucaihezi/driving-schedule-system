@@ -88,5 +88,6 @@
         <module>driving-gateway</module>
         <module>driving-common-web</module>
         <module>driving-coach-service</module>
+        <module>driving-student-service</module>
     </modules>
 </project>

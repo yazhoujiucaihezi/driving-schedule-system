@@ -1,21 +1,23 @@
-package com.drivingschool.student.controller;
+package com.box.student.controller;
+
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
-import com.drivingschool.student.dto.StudentCreateDTO;
-import com.drivingschool.student.dto.StudentQueryDTO;
-import com.drivingschool.student.dto.StudentUpdateDTO;
-import com.drivingschool.student.service.StudentService;
-import com.drivingschool.student.vo.StudentSimpleVO;
-import com.drivingschool.student.vo.StudentVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.box.student.dto.StudentCreateDTO;
+import com.box.student.dto.StudentQueryDTO;
+import com.box.student.dto.StudentUpdateDTO;
+import com.box.student.service.StudentService;
+import com.box.student.vo.StudentSimpleVO;
+import com.box.student.vo.StudentVO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 学员管理控制器
@@ -32,11 +34,11 @@ public class StudentController {
     public Result<Page<StudentVO>> list(StudentQueryDTO dto) {
         // 教练只能查看自己名下的学员
         if ("COACH".equals(SecurityContextUtils.getCurrentUserRole())) {
-            dto.setCoachId(SecurityContextUtils.getCurrentUser().getRelatedId());
+            dto.setCoachId(Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId());
         }
         // 学员只能查看自己的信息
         if ("STUDENT".equals(SecurityContextUtils.getCurrentUserRole())) {
-            Long studentId = SecurityContextUtils.getCurrentUser().getRelatedId();
+            Long studentId = Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId();
             StudentVO vo = studentService.getById(studentId);
             Page<StudentVO> page = new Page<>(1, 1, 1);
             page.setRecords(List.of(vo));
@@ -56,7 +58,7 @@ public class StudentController {
     @GetMapping("/students/my")
     @PreAuthorize("hasRole('COACH')")
     public Result<Page<StudentVO>> myStudents(StudentQueryDTO dto) {
-        dto.setCoachId(SecurityContextUtils.getCurrentUser().getRelatedId());
+        dto.setCoachId(Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId());
         return Result.success(studentService.queryPage(dto));
     }
 

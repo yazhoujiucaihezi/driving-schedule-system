@@ -1,8 +1,9 @@
-package com.drivingschool.student.mapper;
+package com.box.student.mapper;
+
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.drivingschool.student.entity.Student;
 import org.apache.ibatis.annotations.Mapper;
+import com.box.student.entity.Student;
 
 @Mapper
 public interface StudentMapper extends BaseMapper<Student> {

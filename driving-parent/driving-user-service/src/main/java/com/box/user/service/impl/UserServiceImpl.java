@@ -6,7 +6,6 @@ import com.box.api.coach.CoachDTO;
 import com.box.api.coach.CoachFeignClient;
 import com.box.api.user.UserDTO;
 import com.box.common.exception.BusinessException;
-import com.box.common.result.Result;
 import com.box.user.dto.ResetPasswordDTO;
 import com.box.user.dto.UserCreateDTO;
 import com.box.user.dto.UserQueryDTO;
@@ -68,7 +67,7 @@ public class UserServiceImpl implements UserService {
         // 校验绑定对象
         if ("COACH".equals(dto.getRole())) {
             if (dto.getRelatedId() == null) throw new BusinessException("教练账号必须绑定教练ID");
-            Result<CoachDTO> coachDTO = coachFeignClient.getCoachById(dto.getRelatedId());
+            CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getRelatedId());
             if (coachDTO == null) throw new BusinessException("绑定的教练不存在");
             // 一个教练只能有一个账号
             Long exist = sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
@@ -144,9 +143,9 @@ public class UserServiceImpl implements UserService {
     private String getRelatedName(SysUser u) {
         if (u.getRelatedId() == null) return null;
         if ("COACH".equals(u.getRole())) {
-            Result<CoachDTO> r = coachFeignClient.getCoachById(u.getRelatedId());
-            if (r == null || r.getData() == null) return null;
-            return r.getData().getName();
+            CoachDTO coachDTO = coachFeignClient.getCoachById(u.getRelatedId());
+            if (coachDTO == null || coachDTO.getName() == null) return null;
+            return coachDTO.getName();
         }
         if ("STUDENT".equals(u.getRole())) {
             Student s = studentMapper.selectById(u.getRelatedId());

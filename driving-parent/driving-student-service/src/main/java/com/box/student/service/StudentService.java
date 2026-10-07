@@ -1,11 +1,11 @@
-package com.drivingschool.student.service;
+package com.box.student.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.student.dto.StudentCreateDTO;
-import com.drivingschool.student.dto.StudentQueryDTO;
-import com.drivingschool.student.dto.StudentUpdateDTO;
-import com.drivingschool.student.vo.StudentSimpleVO;
-import com.drivingschool.student.vo.StudentVO;
+import com.box.student.dto.StudentCreateDTO;
+import com.box.student.dto.StudentQueryDTO;
+import com.box.student.dto.StudentUpdateDTO;
+import com.box.student.vo.StudentSimpleVO;
+import com.box.student.vo.StudentVO;
 
 import java.util.List;
 
