@@ -18,3 +18,7 @@ spring:
           uri: lb://driving-auth-service
           predicates:
             - Path=/api/auth/**
+        - id: coach-service
+          uri: lb://driving-coach-service
+          predicates:
+            - Path=/api/coaches/**

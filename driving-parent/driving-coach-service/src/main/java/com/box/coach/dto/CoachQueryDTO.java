@@ -1,4 +1,4 @@
-package com.drivingschool.coach.dto;
+package com.box.coach.dto;
 
 import lombok.Data;
 

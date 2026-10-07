@@ -1,10 +1,6 @@
 package com.drivingschool.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.drivingschool.coach.entity.Coach;
-import com.drivingschool.coach.mapper.CoachMapper;
-import com.drivingschool.entity.SysUser;
-import com.drivingschool.mapper.SysUserMapper;
 import com.drivingschool.student.entity.Student;
 import com.drivingschool.student.mapper.StudentMapper;
 import com.drivingschool.vehicle.entity.Vehicle;

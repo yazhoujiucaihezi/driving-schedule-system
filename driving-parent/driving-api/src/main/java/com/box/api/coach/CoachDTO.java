@@ -1,8 +1,5 @@
-package com.box.user.entity;
+package com.box.api.coach;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,10 +12,8 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Data
-@TableName("coach")
-public class Coach {
+public class CoachDTO {
 
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /** 教练姓名 */

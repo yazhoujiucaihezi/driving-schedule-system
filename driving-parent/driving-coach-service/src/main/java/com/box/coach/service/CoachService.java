@@ -1,11 +1,12 @@
-package com.drivingschool.coach.service;
+package com.box.coach.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.coach.dto.CoachCreateDTO;
-import com.drivingschool.coach.dto.CoachQueryDTO;
-import com.drivingschool.coach.dto.CoachUpdateDTO;
-import com.drivingschool.coach.vo.CoachSimpleVO;
-import com.drivingschool.coach.vo.CoachVO;
+import com.box.api.coach.CoachDTO;
+import com.box.coach.dto.CoachCreateDTO;
+import com.box.coach.dto.CoachQueryDTO;
+import com.box.coach.dto.CoachUpdateDTO;
+import com.box.coach.vo.CoachSimpleVO;
+import com.box.coach.vo.CoachVO;
 
 import java.util.List;
 
@@ -31,4 +32,6 @@ public interface CoachService {
 
     /** 查询可用教练简单列表（用于下拉选择） */
     List<CoachSimpleVO> simpleList();
+
+    CoachDTO getCoachById(Long id);
 }

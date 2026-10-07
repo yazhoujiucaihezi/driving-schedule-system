@@ -87,5 +87,6 @@
         <module>driving-auth-service</module>
         <module>driving-gateway</module>
         <module>driving-common-web</module>
+        <module>driving-coach-service</module>
     </modules>
 </project>

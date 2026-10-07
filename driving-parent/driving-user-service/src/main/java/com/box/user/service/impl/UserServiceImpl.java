@@ -2,16 +2,16 @@ package com.box.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.box.api.coach.CoachDTO;
+import com.box.api.coach.CoachFeignClient;
 import com.box.api.user.UserDTO;
 import com.box.common.exception.BusinessException;
 import com.box.common.result.Result;
 import com.box.user.dto.ResetPasswordDTO;
 import com.box.user.dto.UserCreateDTO;
 import com.box.user.dto.UserQueryDTO;
-import com.box.user.entity.Coach;
 import com.box.user.entity.Student;
 import com.box.user.entity.SysUser;
-import com.box.user.mapper.CoachMapper;
 import com.box.user.mapper.StudentMapper;
 import com.box.user.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final SysUserMapper sysUserMapper;
-    private final CoachMapper coachMapper;
     private final StudentMapper studentMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CoachFeignClient coachFeignClient;
 
     @Override
     public Page<UserVO> queryPage(UserQueryDTO dto) {
@@ -68,8 +68,8 @@ public class UserServiceImpl implements UserService {
         // 校验绑定对象
         if ("COACH".equals(dto.getRole())) {
             if (dto.getRelatedId() == null) throw new BusinessException("教练账号必须绑定教练ID");
-            Coach coach = coachMapper.selectById(dto.getRelatedId());
-            if (coach == null) throw new BusinessException("绑定的教练不存在");
+            Result<CoachDTO> coachDTO = coachFeignClient.getCoachById(dto.getRelatedId());
+            if (coachDTO == null) throw new BusinessException("绑定的教练不存在");
             // 一个教练只能有一个账号
             Long exist = sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
                     .eq(SysUser::getRole, "COACH").eq(SysUser::getRelatedId, dto.getRelatedId()));
@@ -144,8 +144,9 @@ public class UserServiceImpl implements UserService {
     private String getRelatedName(SysUser u) {
         if (u.getRelatedId() == null) return null;
         if ("COACH".equals(u.getRole())) {
-            Coach c = coachMapper.selectById(u.getRelatedId());
-            return c != null ? c.getName() : null;
+            Result<CoachDTO> r = coachFeignClient.getCoachById(u.getRelatedId());
+            if (r == null || r.getData() == null) return null;
+            return r.getData().getName();
         }
         if ("STUDENT".equals(u.getRole())) {
             Student s = studentMapper.selectById(u.getRelatedId());

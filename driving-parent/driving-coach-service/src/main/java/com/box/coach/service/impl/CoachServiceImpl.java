@@ -1,15 +1,16 @@
-package com.drivingschool.coach.service.impl;
+package com.box.coach.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.coach.dto.CoachCreateDTO;
-import com.drivingschool.coach.dto.CoachQueryDTO;
-import com.drivingschool.coach.dto.CoachUpdateDTO;
-import com.drivingschool.coach.entity.Coach;
-import com.drivingschool.coach.mapper.CoachMapper;
-import com.drivingschool.coach.service.CoachService;
-import com.drivingschool.coach.vo.CoachSimpleVO;
-import com.drivingschool.coach.vo.CoachVO;
+import com.box.api.coach.CoachDTO;
+import com.box.coach.dto.CoachCreateDTO;
+import com.box.coach.dto.CoachQueryDTO;
+import com.box.coach.dto.CoachUpdateDTO;
+import com.box.coach.entity.Coach;
+import com.box.coach.mapper.CoachMapper;
+import com.box.coach.service.CoachService;
+import com.box.coach.vo.CoachSimpleVO;
+import com.box.coach.vo.CoachVO;
 import com.box.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -112,6 +113,14 @@ public class CoachServiceImpl implements CoachService {
                     return vo;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CoachDTO getCoachById(Long id) {
+        CoachDTO coachDTO = new CoachDTO();
+        Coach coach = coachMapper.selectById(id);
+        BeanUtils.copyProperties(coach, coachDTO);
+        return coachDTO;
     }
 
     // ==================== 内部方法 ====================

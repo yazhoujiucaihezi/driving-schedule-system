@@ -1,19 +1,17 @@
-package com.drivingschool.coach.controller;
-
+package com.box.coach.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.coach.dto.CoachCreateDTO;
-import com.drivingschool.coach.dto.CoachQueryDTO;
-import com.drivingschool.coach.dto.CoachUpdateDTO;
-import com.drivingschool.coach.service.CoachService;
-import com.drivingschool.coach.vo.CoachSimpleVO;
-import com.drivingschool.coach.vo.CoachVO;
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
+import com.box.coach.dto.CoachCreateDTO;
+import com.box.coach.dto.CoachQueryDTO;
+import com.box.coach.dto.CoachUpdateDTO;
+import com.box.coach.service.CoachService;
+import com.box.coach.vo.CoachSimpleVO;
+import com.box.coach.vo.CoachVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 

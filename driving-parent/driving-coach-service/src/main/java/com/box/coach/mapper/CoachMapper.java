@@ -1,7 +1,7 @@
-package com.box.user.mapper;
+package com.box.coach.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.box.user.entity.Coach;
+import com.box.coach.entity.Coach;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

@@ -1,4 +1,4 @@
-package com.drivingschool.coach.vo;
+package com.box.coach.vo;
 
 import lombok.Data;
 
