@@ -1,4 +1,4 @@
-package com.drivingschool.config;
+package com.box.reservation.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

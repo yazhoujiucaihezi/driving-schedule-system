@@ -38,3 +38,7 @@ spring:
           uri: lb://driving-training-service
           predicates:
             - Path=/api/training-records/**
+        - id: reservation-service
+          uri: lb://driving-reservation-service
+          predicates:
+            - Path=/api/reservations/**

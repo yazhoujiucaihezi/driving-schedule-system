@@ -21,4 +21,6 @@ public interface StudentService {
     StudentDTO getDTObyId(Long id);
 
     List<StudentDTO> getDTOByUsername(String username);
+
+    void updateById(Long id);
 }

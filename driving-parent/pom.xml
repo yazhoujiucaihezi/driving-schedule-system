@@ -21,6 +21,7 @@
         <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <jjwt.version>0.12.3</jjwt.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <redisson.version>3.24.3</redisson.version>
     </properties>
 
     <!-- ④ 只声明版本，不引入依赖 -->

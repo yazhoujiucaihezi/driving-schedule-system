@@ -1,4 +1,4 @@
-package com.drivingschool.common.constant;
+package com.box.reservation.common.constant;
 
 /**
  * Redis Key 常量

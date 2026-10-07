@@ -1,4 +1,4 @@
-package com.drivingschool.config;
+package com.box.reservation.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

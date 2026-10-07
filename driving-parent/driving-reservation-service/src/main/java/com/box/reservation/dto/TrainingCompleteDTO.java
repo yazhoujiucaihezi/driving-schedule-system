@@ -1,4 +1,4 @@
-package com.box.training.dto;
+package com.box.reservation.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

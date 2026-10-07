@@ -1,0 +1,20 @@
+server:
+  port: 18087
+
+spring:
+  application:
+    name: driving-reservation-service
+  data:
+    redis:
+      host: 192.168.181.128
+      port: 6379
+
+  datasource:
+    url: jdbc:mysql://192.168.181.128:3306/driving_school_schedule?...
+    username: root
+    password: 123
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.181.128:8848

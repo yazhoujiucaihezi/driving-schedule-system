@@ -166,6 +166,13 @@ public class StudentServiceImpl implements StudentService {
         }).toList();
     }
 
+    @Override
+    public void updateById(Long id) {
+        Student s = new Student();
+        s.setId(id);
+        studentMapper.updateById(s);
+    }
+
     private Student findStudent(Long id) {
         Student student = studentMapper.selectById(id);
         if (student == null) {
