@@ -1,30 +1,35 @@
-package com.drivingschool.reservation.service.impl;
+package com.box.reservation.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.coach.entity.Coach;
-import com.drivingschool.coach.mapper.CoachMapper;
-import com.drivingschool.common.constant.RedisKeyConstants;
+import com.box.api.coach.CoachDTO;
+import com.box.api.coach.CoachFeignClient;
+import com.box.api.schedule.ScheduleDTO;
+import com.box.api.schedule.ScheduleFeignClient;
+import com.box.api.student.StudentDTO;
+import com.box.api.student.StudentFeignClient;
+import com.box.api.training.TrainingRecordCreateDTO;
+import com.box.api.training.TrainingRecordFeignClient;
+import com.box.api.vehicle.VehicleDTO;
+import com.box.api.vehicle.VehicleFeignClient;
 import com.box.common.exception.BusinessException;
-import com.drivingschool.reservation.dto.ReservationCancelDTO;
-import com.drivingschool.reservation.dto.ReservationCreateDTO;
-import com.drivingschool.reservation.dto.ReservationQueryDTO;
-import com.drivingschool.reservation.entity.Reservation;
-import com.drivingschool.reservation.mapper.ReservationMapper;
-import com.drivingschool.reservation.service.ReservationService;
-import com.drivingschool.reservation.vo.ReservationOptionVO;
-import com.drivingschool.reservation.vo.ReservationVO;
-import com.drivingschool.schedule.entity.CoachSchedule;
-import com.drivingschool.schedule.mapper.CoachScheduleMapper;
-import com.drivingschool.student.entity.Student;
-import com.drivingschool.student.mapper.StudentMapper;
-import com.drivingschool.vehicle.entity.Vehicle;
-import com.drivingschool.vehicle.mapper.VehicleMapper;
+import com.box.common.result.Result;
+import com.box.reservation.common.constant.RedisKeyConstants;
+import com.box.reservation.dto.ReservationCancelDTO;
+import com.box.reservation.dto.ReservationCreateDTO;
+import com.box.reservation.dto.ReservationQueryDTO;
+import com.box.reservation.dto.TrainingCompleteDTO;
+import com.box.reservation.entity.Reservation;
+import com.box.reservation.mapper.ReservationMapper;
+import com.box.reservation.service.ReservationService;
+import com.box.reservation.vo.ReservationOptionVO;
+import com.box.reservation.vo.ReservationVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -48,27 +53,24 @@ import java.util.stream.Collectors;
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationMapper reservationMapper;
-    private final CoachScheduleMapper scheduleMapper;
-    private final StudentMapper studentMapper;
-    private final CoachMapper coachMapper;
-    private final VehicleMapper vehicleMapper;
-    private final RedissonClient redissonClient;
+    private final StudentFeignClient studentFeignClient;
+    private final VehicleFeignClient vehicleFeignClient;
+    private final CoachFeignClient coachFeignClient;
+    private final ScheduleFeignClient scheduleFeignClient;
+    private final TrainingRecordFeignClient trainingRecordFeignClient;
     private final StringRedisTemplate stringRedisTemplate;
-    private final com.drivingschool.training.mapper.TrainingRecordMapper trainingRecordMapper;
-
+    private final RedissonClient redissonClient;
     @Override
     public ReservationOptionVO getOptions(Long studentId, LocalDate date, String timeSlot) {
-        Student student = studentMapper.selectById(studentId);
+        Result<StudentDTO> result = studentFeignClient.getById(studentId);
+        StudentDTO student = result.getData();
         if (student == null) throw new BusinessException("学员信息不存在");
 
         ReservationOptionVO vo = new ReservationOptionVO();
         ReservationOptionVO.MainCoachOption opt = new ReservationOptionVO.MainCoachOption();
 
         // 查询主教练排班
-        CoachSchedule mainSchedule = scheduleMapper.selectOne(new LambdaQueryWrapper<CoachSchedule>()
-                .eq(CoachSchedule::getCoachId, student.getMainCoachId())
-                .eq(CoachSchedule::getScheduleDate, date)
-                .eq(CoachSchedule::getTimeSlot, timeSlot));
+        ScheduleDTO mainSchedule = scheduleFeignClient.getOne(student.getMainCoachId(),date,timeSlot).getData();
 
         boolean mainFull = false;
 
@@ -95,15 +97,13 @@ public class ReservationServiceImpl implements ReservationService {
 
         // M7: 主教练不可用 → 查询可调剂教练
         if (mainFull) {
-            var adjustList = scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>()
-                    .eq(CoachSchedule::getScheduleDate, date)
-                    .eq(CoachSchedule::getTimeSlot, timeSlot)
-                    .eq(CoachSchedule::getStatus, "OPEN")
-                    .apply("current_students < max_students"))
+            var adjustList = scheduleFeignClient
+                    .listAdjustable(date, timeSlot, student.getMainCoachId())
+                    .getData()
                     .stream()
                     .filter(s -> !s.getCoachId().equals(student.getMainCoachId())) // 排除主教练
                     .filter(s -> {
-                        Coach c = coachMapper.selectById(s.getCoachId());
+                        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
                         return c != null && "NORMAL".equals(c.getStatus());
                     })
                     .sorted((a, b) -> Integer.compare(
@@ -118,10 +118,10 @@ public class ReservationServiceImpl implements ReservationService {
                         ao.setMaxStudents(s.getMaxStudents());
                         ao.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
                         ao.setRecommendReason("该教练当前剩余 " + ao.getRemainCount() + " 个名额");
-                        Coach c = coachMapper.selectById(s.getCoachId());
+                        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
                         ao.setCoachName(c != null ? c.getName() : "未知");
                         if (s.getVehicleId() != null) {
-                            Vehicle v = vehicleMapper.selectById(s.getVehicleId());
+                            VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
                             if (v != null && "NORMAL".equals(v.getStatus())) {
                                 ao.setVehicleId(s.getVehicleId());
                                 ao.setPlateNumber(v.getPlateNumber());
@@ -145,13 +145,13 @@ public class ReservationServiceImpl implements ReservationService {
 
         // --- 1. 防重复点击：学员级限流（轻量） ---
         String limitKey = RedisKeyConstants.LIMIT_RESERVATION + studentId;
-        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(limitKey))) {
+        if (stringRedisTemplate.hasKey(limitKey)) {
             throw new BusinessException("请勿频繁提交预约，请稍后再试");
         }
         stringRedisTemplate.opsForValue().set(limitKey, "1", Duration.ofSeconds(5));
 
         // --- 2. 加锁前基础校验 ---
-        Student student = studentMapper.selectById(studentId);
+        StudentDTO student = studentFeignClient.getById(studentId).getData();
         if (student == null) throw new BusinessException("学员信息不存在");
 
         // --- 3. Redisson 分布式锁 ---
@@ -167,7 +167,7 @@ public class ReservationServiceImpl implements ReservationService {
             }
 
             // --- 4. 锁内重新查询排班（避免使用加锁前可能过期的数据） ---
-            CoachSchedule schedule = scheduleMapper.selectById(scheduleId);
+            ScheduleDTO schedule = scheduleFeignClient.getById(scheduleId).getData();
             if (schedule == null) throw new BusinessException("排班不存在");
             if (!"OPEN".equals(schedule.getStatus())) throw new BusinessException("该排班未开放预约");
 
@@ -306,10 +306,9 @@ public class ReservationServiceImpl implements ReservationService {
         if (StringUtils.hasText(dto.getTimeSlot())) w.eq(Reservation::getTimeSlot, dto.getTimeSlot());
         if (StringUtils.hasText(dto.getStatus())) w.eq(Reservation::getStatus, dto.getStatus());
         if (StringUtils.hasText(dto.getStudentName())) {
-            var students = studentMapper.selectList(new LambdaQueryWrapper<Student>()
-                    .like(Student::getName, dto.getStudentName()));
+            var students = studentFeignClient.selectList(dto.getStudentName()).getData();
             if (!students.isEmpty()) {
-                w.in(Reservation::getStudentId, students.stream().map(Student::getId).collect(Collectors.toList()));
+                w.in(Reservation::getStudentId, students.stream().map(StudentDTO::getId).collect(Collectors.toList()));
             } else {
                 w.eq(Reservation::getStudentId, -1L);
             }
@@ -323,16 +322,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     // ==================== 内部方法 ====================
 
-    private void fillMinimalOption(ReservationOptionVO.MainCoachOption opt, CoachSchedule s) {
-        opt.setScheduleId(s.getId());
-        opt.setCoachId(s.getCoachId());
-        opt.setCurrentStudents(s.getCurrentStudents());
-        opt.setMaxStudents(s.getMaxStudents());
-        opt.setRemainCount(0);
-        fillCoachAndVehicle(opt, s);
-    }
 
-    private void fillFullOption(ReservationOptionVO.MainCoachOption opt, CoachSchedule s) {
+    private void fillFullOption(ReservationOptionVO.MainCoachOption opt, ScheduleDTO s) {
         opt.setScheduleId(s.getId());
         opt.setCoachId(s.getCoachId());
         opt.setCurrentStudents(s.getCurrentStudents());
@@ -343,11 +334,11 @@ public class ReservationServiceImpl implements ReservationService {
         fillCoachAndVehicle(opt, s);
     }
 
-    private void fillCoachAndVehicle(ReservationOptionVO.MainCoachOption opt, CoachSchedule s) {
-        Coach c = coachMapper.selectById(s.getCoachId());
+    private void fillCoachAndVehicle(ReservationOptionVO.MainCoachOption opt, ScheduleDTO s) {
+        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
         opt.setCoachName(c != null ? c.getName() : "未知");
         if (s.getVehicleId() != null) {
-            Vehicle v = vehicleMapper.selectById(s.getVehicleId());
+            VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
             opt.setVehicleId(s.getVehicleId());
             opt.setPlateNumber(v != null ? v.getPlateNumber() : null);
         }
@@ -357,7 +348,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void complete(Long reservationId, com.drivingschool.training.dto.TrainingCompleteDTO dto, Long coachId) {
+    public void complete(Long reservationId, TrainingCompleteDTO dto, Long coachId) {
         Reservation r = reservationMapper.selectById(reservationId);
         if (r == null) throw new BusinessException("预约不存在");
         if (!"SUCCESS".equals(r.getStatus())) throw new BusinessException("该预约已" + r.getStatus() + "，不能完成练车");
@@ -368,29 +359,35 @@ public class ReservationServiceImpl implements ReservationService {
         reservationMapper.updateById(r);
 
         // 生成练车记录（durationMinutes 附加到备注中）
+        TrainingRecordCreateDTO trDto = getTrainingRecordCreateDTO(dto, r);
+        trainingRecordFeignClient.create(trDto);
+
+        // 学员已完成练车次数 +1
+        StudentDTO student = studentFeignClient.getById(r.getStudentId()).getData();
+        if (student != null) {
+            student.setCompletedTrainingCount(student.getCompletedTrainingCount() + 1);
+            studentFeignClient.updateById(student.getId());
+        }
+    }
+
+    @NonNull
+    private static TrainingRecordCreateDTO getTrainingRecordCreateDTO(TrainingCompleteDTO dto, Reservation r) {
         String remark = dto.getCoachRemark();
         if (dto.getDurationMinutes() != null && dto.getDurationMinutes() > 0) {
             remark = (remark != null ? remark + " " : "") + "(练车时长: " + dto.getDurationMinutes() + " 分钟)";
         }
 
-        com.drivingschool.training.entity.TrainingRecord tr = new com.drivingschool.training.entity.TrainingRecord();
-        tr.setReservationId(r.getId());
-        tr.setStudentId(r.getStudentId());
-        tr.setCoachId(r.getActualCoachId());
-        tr.setVehicleId(r.getVehicleId());
-        tr.setTrainingDate(r.getReservationDate());
-        tr.setTimeSlot(r.getTimeSlot());
-        tr.setTrainingContent(dto.getTrainingContent());
-        tr.setCoachComment(remark);
-        tr.setResult("COMPLETED");
-        trainingRecordMapper.insert(tr);
-
-        // 学员已完成练车次数 +1
-        Student student = studentMapper.selectById(r.getStudentId());
-        if (student != null) {
-            student.setCompletedTrainingCount(student.getCompletedTrainingCount() + 1);
-            studentMapper.updateById(student);
-        }
+        TrainingRecordCreateDTO trDto = new TrainingRecordCreateDTO();
+        trDto.setReservationId(r.getId());
+        trDto.setStudentId(r.getStudentId());
+        trDto.setCoachId(r.getActualCoachId());
+        trDto.setVehicleId(r.getVehicleId());
+        trDto.setTrainingDate(r.getReservationDate());
+        trDto.setTimeSlot(r.getTimeSlot());
+        trDto.setTrainingContent(dto.getTrainingContent());
+        trDto.setCoachComment(remark);
+        trDto.setResult("COMPLETED");
+        return trDto;
     }
 
     @Override
@@ -407,7 +404,42 @@ public class ReservationServiceImpl implements ReservationService {
         // 缺席不生成 training_record，不增加 completed_training_count
     }
 
+    @Override
+    public Long countByDate(String date) {
+        return reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>().eq(Reservation::getReservationDate, date));
+    }
+
+    @Override
+    public Long countByDateAndStatus(LocalDate date, String status) {
+        return reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>()
+                .eq(Reservation::getReservationDate, date)
+                .eq(Reservation::getStatus, status));
+    }
+
+    @Override
+    public Long countByStudentIdAndStatus(Long studentId, String status) {
+        return reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>()
+                .eq(Reservation::getStudentId, studentId)
+                .eq(Reservation::getStatus, status));
+    }
+
+    @Override
+    public Long countByStudentIdAndIsAdjusted(Long studentId, boolean isAdjusted) {
+        return reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>()
+                .eq(Reservation::getStudentId, studentId)
+                .eq(Reservation::getIsAdjusted, isAdjusted));
+    }
+
     // ==================== 内部方法 ====================
+
+    private void fillMinimalOption(ReservationOptionVO.MainCoachOption opt, ScheduleDTO s) {
+        opt.setScheduleId(s.getId());
+        opt.setCoachId(s.getCoachId());
+        opt.setCurrentStudents(s.getCurrentStudents());
+        opt.setMaxStudents(s.getMaxStudents());
+        opt.setRemainCount(0);
+        fillCoachAndVehicle(opt, s);
+    }
 
     private ReservationVO toVO(Reservation r) {
         ReservationVO vo = new ReservationVO();
@@ -426,14 +458,14 @@ public class ReservationServiceImpl implements ReservationService {
         vo.setCreateTime(r.getCreateTime());
         vo.setCancelTime(r.getCancelTime());
 
-        Student st = studentMapper.selectById(r.getStudentId());
+        StudentDTO st = studentFeignClient.getById(r.getStudentId()).getData();
         if (st != null) { vo.setStudentName(st.getName()); vo.setStudentPhone(st.getPhone()); }
-        Coach mc = coachMapper.selectById(r.getMainCoachId());
+        CoachDTO mc = coachFeignClient.getCoachById(r.getMainCoachId());
         if (mc != null) vo.setMainCoachName(mc.getName());
-        Coach ac = coachMapper.selectById(r.getActualCoachId());
+        CoachDTO ac = coachFeignClient.getCoachById(r.getActualCoachId());
         if (ac != null) vo.setActualCoachName(ac.getName());
         if (r.getVehicleId() != null) {
-            Vehicle v = vehicleMapper.selectById(r.getVehicleId());
+            VehicleDTO v = vehicleFeignClient.getById(r.getVehicleId());
             if (v != null) vo.setPlateNumber(v.getPlateNumber());
         }
         return vo;

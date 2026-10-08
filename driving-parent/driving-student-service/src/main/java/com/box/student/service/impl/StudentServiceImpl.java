@@ -173,6 +173,11 @@ public class StudentServiceImpl implements StudentService {
         studentMapper.updateById(s);
     }
 
+    @Override
+    public Long count() {
+        return studentMapper.selectCount(null);
+    }
+
     private Student findStudent(Long id) {
         Student student = studentMapper.selectById(id);
         if (student == null) {

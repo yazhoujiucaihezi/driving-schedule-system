@@ -21,4 +21,6 @@ public interface VehicleService {
     VehicleDTO getVehicleDTOById(Long id);
 
     VehicleDTO getVehicleDTOByCoachId(Long coachId, String status);
+
+    Long count();
 }

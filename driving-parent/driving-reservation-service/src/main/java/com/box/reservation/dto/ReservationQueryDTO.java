@@ -1,4 +1,4 @@
-package com.drivingschool.reservation.dto;
+package com.box.reservation.dto;
 
 import lombok.Data;
 

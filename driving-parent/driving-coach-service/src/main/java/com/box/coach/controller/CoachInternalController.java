@@ -4,10 +4,7 @@ import com.box.api.coach.CoachDTO;
 import com.box.coach.service.CoachService;
 import com.box.common.result.Result;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/internal/coach")
@@ -23,5 +20,10 @@ public class CoachInternalController {
             return Result.success(null);
         }
         return Result.success(coachDTO);
+    }
+
+    @GetMapping("/count/status")
+    public Long getCoachCountByStatus(@RequestParam("status") String status) {
+        return coachService.getCoachCountByStatus(status);
     }
 }

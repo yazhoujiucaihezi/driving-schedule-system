@@ -1,7 +1,7 @@
-package com.drivingschool.reservation.mapper;
+package com.box.reservation.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.drivingschool.reservation.entity.Reservation;
+import com.box.reservation.entity.Reservation;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;

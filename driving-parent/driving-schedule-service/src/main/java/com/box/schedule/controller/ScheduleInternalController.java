@@ -5,6 +5,7 @@ import com.box.api.schedule.ScheduleDTO;
 import com.box.common.result.Result;
 import com.box.schedule.entity.CoachSchedule;
 import com.box.schedule.mapper.CoachScheduleMapper;
+import com.box.schedule.service.CoachScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ScheduleInternalController {
 
     private final CoachScheduleMapper scheduleMapper;
+    private final CoachScheduleService scheduleService;
 
     @GetMapping("/{id}")
     public Result<ScheduleDTO> getById(@PathVariable("id") Long id) {
@@ -56,6 +58,11 @@ public class ScheduleInternalController {
     @PostMapping("/decrease/{id}")
     public Result<Integer> decrease(@PathVariable Long id) {
         return Result.success(scheduleMapper.decreaseCurrentStudents(id));
+    }
+
+    @GetMapping("/count/date")
+    public Result<Long> countByDate(@RequestParam LocalDate date) {
+        return Result.success(scheduleService.countByDate(date));
     }
 
     private ScheduleDTO toDTO(CoachSchedule s) {

@@ -1,11 +1,13 @@
-package com.drivingschool.reservation.service;
+package com.box.reservation.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.drivingschool.reservation.dto.ReservationCancelDTO;
-import com.drivingschool.reservation.dto.ReservationCreateDTO;
-import com.drivingschool.reservation.dto.ReservationQueryDTO;
-import com.drivingschool.reservation.vo.ReservationOptionVO;
-import com.drivingschool.reservation.vo.ReservationVO;
+import com.box.common.result.Result;
+import com.box.reservation.dto.ReservationCancelDTO;
+import com.box.reservation.dto.ReservationCreateDTO;
+import com.box.reservation.dto.ReservationQueryDTO;
+import com.box.reservation.dto.TrainingCompleteDTO;
+import com.box.reservation.vo.ReservationOptionVO;
+import com.box.reservation.vo.ReservationVO;
 
 import java.time.LocalDate;
 
@@ -23,7 +25,15 @@ public interface ReservationService {
     /** 管理员分页查询全部预约 */
     Page<ReservationVO> adminQuery(ReservationQueryDTO dto);
     /** M8：教练完成练车 */
-    void complete(Long reservationId, com.drivingschool.training.dto.TrainingCompleteDTO dto, Long coachId);
+    void complete(Long reservationId, TrainingCompleteDTO dto, Long coachId);
     /** M8：教练标记缺席 */
     void markAbsent(Long reservationId, String reason, Long coachId);
+
+    Long countByDate(String date);
+
+    Long countByDateAndStatus(LocalDate date, String status);
+
+    Long countByStudentIdAndStatus(Long studentId, String status);
+
+    Long countByStudentIdAndIsAdjusted(Long studentId, boolean isAdjusted);
 }

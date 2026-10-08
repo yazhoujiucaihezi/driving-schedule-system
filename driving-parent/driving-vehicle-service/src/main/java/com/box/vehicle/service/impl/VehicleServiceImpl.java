@@ -147,6 +147,11 @@ public class VehicleServiceImpl implements VehicleService {
         return dto;
     }
 
+    @Override
+    public Long count() {
+        return vehicleMapper.selectCount(null);
+    }
+
     // ==================== 内部方法 ====================
 
     private Vehicle findVehicle(Long id) {

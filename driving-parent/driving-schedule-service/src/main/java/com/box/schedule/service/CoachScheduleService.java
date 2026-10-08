@@ -22,4 +22,6 @@ public interface CoachScheduleService {
     Map<String, Integer> batchCreate(ScheduleBatchCreateDTO dto);
     /** 查询可预约排班（M5 学员预约使用） */
     List<ScheduleAvailableVO> availableList(LocalDate date, String timeSlot);
+
+    Long countByDate(LocalDate date);
 }

@@ -28,4 +28,9 @@ public class StudentInternalController {
     public void updateById(@PathVariable("id") Long id) {
         studentService.updateById(id);
     }
+
+    @GetMapping("/count")
+    public Result<Long> count() {
+        return Result.success(studentService.count());
+    }
 }

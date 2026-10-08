@@ -1,4 +1,4 @@
-package com.drivingschool.reservation.entity;
+package com.box.reservation.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

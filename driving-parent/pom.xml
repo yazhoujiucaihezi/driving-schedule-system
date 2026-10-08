@@ -94,6 +94,7 @@
         <module>driving-vehicle-service</module>
         <module>driving-reservation-service</module>
         <module>driving-training-service</module>
+        <module>driving-statistics-service</module>
     </modules>
     <build>
         <plugins>

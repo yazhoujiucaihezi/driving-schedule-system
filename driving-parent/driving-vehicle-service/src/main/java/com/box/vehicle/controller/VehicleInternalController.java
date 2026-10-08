@@ -25,4 +25,9 @@ public class VehicleInternalController {
                                        @RequestParam("status") String status) {
         return Result.success(vehicleService.getVehicleDTOByCoachId(coachId, status));
     }
+
+    @GetMapping("/count")
+    public Result<Long> count() {
+        return Result.success(vehicleService.count());
+    }
 }

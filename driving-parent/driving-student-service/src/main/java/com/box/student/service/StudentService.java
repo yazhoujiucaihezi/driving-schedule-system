@@ -23,4 +23,6 @@ public interface StudentService {
     List<StudentDTO> getDTOByUsername(String username);
 
     void updateById(Long id);
+
+    Long count();
 }

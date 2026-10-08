@@ -123,6 +123,11 @@ public class CoachServiceImpl implements CoachService {
         return coachDTO;
     }
 
+    @Override
+    public Long getCoachCountByStatus(String status) {
+        return coachMapper.selectCount(new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, status));
+    }
+
     // ==================== 内部方法 ====================
 
     /** 查询教练，不存在则抛异常 */

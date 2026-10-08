@@ -201,6 +201,12 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Long countByDate(LocalDate date) {
+        return scheduleMapper.selectCount(new LambdaQueryWrapper<CoachSchedule>()
+                .eq(CoachSchedule::getScheduleDate, date));
+    }
+
     // ==================== 内部方法 ====================
 
     private CoachSchedule findSchedule(Long id) {

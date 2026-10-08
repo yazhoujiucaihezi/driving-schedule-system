@@ -34,4 +34,6 @@ public interface CoachService {
     List<CoachSimpleVO> simpleList();
 
     CoachDTO getCoachById(Long id);
+
+    Long getCoachCountByStatus(String status);
 }

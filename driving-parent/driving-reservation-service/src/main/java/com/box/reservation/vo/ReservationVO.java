@@ -1,4 +1,4 @@
-package com.drivingschool.reservation.vo;
+package com.box.reservation.vo;
 
 import lombok.Data;
 

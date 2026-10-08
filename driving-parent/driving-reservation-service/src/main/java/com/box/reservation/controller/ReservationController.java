@@ -1,14 +1,12 @@
-package com.drivingschool.reservation.controller;
+package com.box.reservation.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
-import com.drivingschool.reservation.dto.ReservationCancelDTO;
-import com.drivingschool.reservation.dto.ReservationCreateDTO;
-import com.drivingschool.reservation.dto.ReservationQueryDTO;
-import com.drivingschool.reservation.service.ReservationService;
-import com.drivingschool.reservation.vo.ReservationOptionVO;
-import com.drivingschool.reservation.vo.ReservationVO;
+import com.box.reservation.dto.*;
+import com.box.reservation.service.ReservationService;
+import com.box.reservation.vo.ReservationOptionVO;
+import com.box.reservation.vo.ReservationVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -90,7 +88,7 @@ public class ReservationController {
     /** M8：教练完成练车 */
     @PostMapping("/{id}/complete")
     @PreAuthorize("hasRole('COACH')")
-    public Result<String> complete(@PathVariable Long id, @Valid @RequestBody com.drivingschool.training.dto.TrainingCompleteDTO dto) {
+    public Result<String> complete(@PathVariable Long id, @Valid @RequestBody TrainingCompleteDTO dto) {
         Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
         reservationService.complete(id, dto, coachId);
         return Result.success("练车完成");
@@ -99,8 +97,8 @@ public class ReservationController {
     /** M8：教练标记学员缺席 */
     @PostMapping("/{id}/absent")
     @PreAuthorize("hasRole('COACH')")
-    public Result<String> absent(@PathVariable Long id, @RequestBody(required = false) com.drivingschool.training.dto.TrainingAbsentDTO dto) {
-        if (dto == null) dto = new com.drivingschool.training.dto.TrainingAbsentDTO();
+    public Result<String> absent(@PathVariable Long id, @RequestBody(required = false) TrainingAbsentDTO dto) {
+        if (dto == null) dto = new TrainingAbsentDTO();
         Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
         reservationService.markAbsent(id, dto.getReason(), coachId);
         return Result.success("已标记缺席");
