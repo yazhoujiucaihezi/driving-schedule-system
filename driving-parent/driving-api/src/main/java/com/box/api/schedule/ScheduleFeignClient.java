@@ -30,7 +30,4 @@ public interface ScheduleFeignClient {
 
     @PostMapping("/internal/schedule/decrease/{id}")
     Result<Integer> decreaseCurrentStudents(@PathVariable("id") Long id);
-
-    @GetMapping("/internal/schedule/count/date")
-    Long countByDate(@RequestParam("date") LocalDate date);
 }

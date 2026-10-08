@@ -1,19 +1,14 @@
-package com.drivingschool.statistics.service.impl;
+package com.box.statistics.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.drivingschool.coach.entity.Coach;
-import com.drivingschool.coach.mapper.CoachMapper;
-import com.drivingschool.reservation.entity.Reservation;
-import com.drivingschool.reservation.mapper.ReservationMapper;
-import com.drivingschool.schedule.entity.CoachSchedule;
-import com.drivingschool.schedule.mapper.CoachScheduleMapper;
-import com.drivingschool.statistics.service.StatisticsService;
-import com.drivingschool.statistics.vo.*;
-import com.drivingschool.student.entity.Student;
-import com.drivingschool.student.mapper.StudentMapper;
-import com.drivingschool.training.entity.TrainingRecord;
-import com.drivingschool.training.mapper.TrainingRecordMapper;
-import com.drivingschool.vehicle.mapper.VehicleMapper;
+import com.box.statistics.entity.Coach;
+import com.box.statistics.mapper.*;
+import com.box.statistics.entity.Reservation;
+import com.box.statistics.entity.CoachSchedule;
+import com.box.statistics.service.StatisticsService;
+import com.box.statistics.vo.*;
+import com.box.statistics.entity.Student;
+import com.box.statistics.entity.TrainingRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +77,6 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<ReservationTrendVO> reservationTrend() {
         List<ReservationTrendVO> list = new ArrayList<>();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM-dd");
         for (int i = 6; i >= 0; i--) {
             LocalDate d = LocalDate.now().minusDays(i);
             ReservationTrendVO v = new ReservationTrendVO();
@@ -181,14 +175,14 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         var next = reservationMapper.selectList(new LambdaQueryWrapper<Reservation>().eq(Reservation::getStudentId, studentId).eq(Reservation::getStatus, "SUCCESS").ge(Reservation::getReservationDate, LocalDate.now()).orderByAsc(Reservation::getReservationDate).last("LIMIT 1"));
         if (!next.isEmpty()) {
-            Reservation n = next.get(0);
+            Reservation n = next.getFirst();
             Coach c = coachMapper.selectById(n.getActualCoachId());
             vo.setNextReservation(n.getReservationDate() + " " + ("MORNING".equals(n.getTimeSlot()) ? "上午" : "下午") + " · " + (c != null ? c.getName() : ""));
         }
 
         var rec = trainingRecordMapper.selectList(new LambdaQueryWrapper<TrainingRecord>().eq(TrainingRecord::getStudentId, studentId).orderByDesc(TrainingRecord::getCreateTime).last("LIMIT 1"));
         if (!rec.isEmpty()) {
-            TrainingRecord t = rec.get(0);
+            TrainingRecord t = rec.getFirst();
             Coach c = coachMapper.selectById(t.getCoachId());
             vo.setRecentTrainingRecord((t.getTrainingContent() != null ? t.getTrainingContent() : "练车") + " · " + (c != null ? c.getName() : ""));
         }

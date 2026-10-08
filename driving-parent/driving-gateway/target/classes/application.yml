@@ -42,3 +42,7 @@ spring:
           uri: lb://driving-reservation-service
           predicates:
             - Path=/api/reservations/**
+        - id: statistics-service
+          uri: lb://driving-statistics-service
+          predicates:
+            - Path=/api/statistics/**

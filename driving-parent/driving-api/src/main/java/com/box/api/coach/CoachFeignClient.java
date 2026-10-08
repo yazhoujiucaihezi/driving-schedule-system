@@ -12,7 +12,5 @@ public interface CoachFeignClient {
     @GetMapping("/internal/coach/by-id/{id}")
     CoachDTO getCoachById(@PathVariable("id") Long id);
 
-    @GetMapping("/internal/coach/count/status")
-    Long getCoachCountByStatus(@RequestParam("status") String status);
 
 }

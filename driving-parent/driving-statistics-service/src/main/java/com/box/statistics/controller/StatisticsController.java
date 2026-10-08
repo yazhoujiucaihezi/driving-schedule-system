@@ -1,14 +1,15 @@
-package com.drivingschool.statistics.controller;
+package com.box.statistics.controller;
 
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
-import com.drivingschool.statistics.service.StatisticsService;
-import com.drivingschool.statistics.vo.*;
+import com.box.statistics.service.StatisticsService;
+import com.box.statistics.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 统计数据控制器 — 统一 statistics 模块，按角色开放不同接口
@@ -47,14 +48,14 @@ public class StatisticsController {
     @GetMapping("/coach/overview")
     @PreAuthorize("hasRole('COACH')")
     public Result<CoachOverviewVO> coachOverview() {
-        Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long coachId = Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId();
         return Result.success(statisticsService.coachOverview(coachId));
     }
 
     @GetMapping("/student/overview")
     @PreAuthorize("hasRole('STUDENT')")
     public Result<StudentOverviewVO> studentOverview() {
-        Long studentId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long studentId = Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId();
         return Result.success(statisticsService.studentOverview(studentId));
     }
 }

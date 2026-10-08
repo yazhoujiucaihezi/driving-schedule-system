@@ -20,7 +20,4 @@ public interface StudentFeignClient {
     @PostMapping("/internal/student/update-id/{id}")
     void updateById(@PathVariable("id") Long id);
 
-    @GetMapping("/internal/student/count")
-    Long count();
-
 }

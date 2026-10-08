@@ -17,6 +17,4 @@ public interface VehicleFeignClient {
             @RequestParam("status") String status
     );
 
-    @GetMapping("/internal/vehicle/count")
-    Long count();
 }
