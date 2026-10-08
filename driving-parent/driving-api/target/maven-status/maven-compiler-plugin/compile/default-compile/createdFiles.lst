@@ -1,0 +1,12 @@
+com\box\api\student\StudentFeignClient.class
+com\box\api\vehicle\VehicleFeignClient.class
+com\box\api\user\UserFeignClient.class
+com\box\api\coach\CoachFeignClient.class
+com\box\api\student\StudentDTO.class
+com\box\api\training\TrainingRecordCreateDTO.class
+com\box\api\training\TrainingRecordFeignClient.class
+com\box\api\user\UserDTO.class
+com\box\api\vehicle\VehicleDTO.class
+com\box\api\schedule\ScheduleDTO.class
+com\box\api\coach\CoachDTO.class
+com\box\api\schedule\ScheduleFeignClient.class

@@ -48,8 +48,9 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
             ServerWebExchange mutated = exchange.mutate()
                     .request(r -> r
                             .header("X-User-Id", String.valueOf(userId))
-                            .header("X-User-Role", role))
-                    .build();
+                            .header("X-User-Role", role)
+                            .header("X-User-RelatedId", String.valueOf(claims.get("relatedId", Long.class)))
+                    ).build();
 
             return chain.filter(mutated);
 

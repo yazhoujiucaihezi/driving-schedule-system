@@ -1,2 +1,12 @@
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\coach\CoachDTO.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\coach\CoachFeignClient.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\schedule\ScheduleDTO.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\schedule\ScheduleFeignClient.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\student\StudentDTO.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\student\StudentFeignClient.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\training\TrainingRecordCreateDTO.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\training\TrainingRecordFeignClient.java
 D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\user\UserDTO.java
 D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\user\UserFeignClient.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\vehicle\VehicleDTO.java
+D:\driving-school-schedule-system-main\driving-parent\driving-api\src\main\java\com\box\api\vehicle\VehicleFeignClient.java

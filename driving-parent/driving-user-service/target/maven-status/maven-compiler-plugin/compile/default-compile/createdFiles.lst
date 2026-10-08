@@ -1,0 +1,14 @@
+com\box\user\dto\UserCreateDTO.class
+com\box\user\entity\Student.class
+com\box\user\UserServiceApplication.class
+com\box\user\mapper\SysUserMapper.class
+com\box\user\dto\ResetPasswordDTO.class
+com\box\user\controller\UserController.class
+com\box\user\service\UserService.class
+com\box\user\vo\UserVO.class
+com\box\user\config\PasswordConfig.class
+com\box\user\dto\UserQueryDTO.class
+com\box\user\controller\UserInternalController.class
+com\box\user\mapper\StudentMapper.class
+com\box\user\service\impl\UserServiceImpl.class
+com\box\user\entity\SysUser.class

@@ -4,10 +4,8 @@ D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\m
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\dto\ResetPasswordDTO.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\dto\UserCreateDTO.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\dto\UserQueryDTO.java
-D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\entity\Coach.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\entity\Student.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\entity\SysUser.java
-D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\mapper\CoachMapper.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\mapper\StudentMapper.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\mapper\SysUserMapper.java
 D:\driving-school-schedule-system-main\driving-parent\driving-user-service\src\main\java\com\box\user\service\impl\UserServiceImpl.java

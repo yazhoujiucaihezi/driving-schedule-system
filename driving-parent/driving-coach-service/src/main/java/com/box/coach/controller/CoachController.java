@@ -8,6 +8,7 @@ import com.box.coach.dto.CoachUpdateDTO;
 import com.box.coach.service.CoachService;
 import com.box.coach.vo.CoachSimpleVO;
 import com.box.coach.vo.CoachVO;
+import com.box.common.web.utils.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ public class CoachController {
     public Result<Page<CoachVO>> list(CoachQueryDTO dto) {
         // 教练角色只能查看自己的信息
         if ("COACH".equals(SecurityContextUtils.getCurrentUserRole())) {
-            Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
+            Long coachId = UserContext.getRelatedId();
             CoachVO vo = coachService.getById(coachId);
             Page<CoachVO> page = new Page<>(1, 1, 1);
             page.setRecords(List.of(vo));

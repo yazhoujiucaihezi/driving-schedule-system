@@ -1,0 +1,10 @@
+com\box\auth\service\AuthService.class
+com\box\auth\service\impl\AuthServiceImpl.class
+com\box\auth\controller\AuthController.class
+com\box\auth\config\PasswordConfig.class
+com\box\auth\vo\UserInfoVO.class
+com\box\auth\dto\LoginRequestDTO.class
+com\box\auth\vo\LoginResponseVO.class
+com\box\auth\vo\LoginResponseVO$LoginResponseVOBuilder.class
+com\box\auth\AuthServiceApplication.class
+com\box\auth\vo\UserInfoVO$UserInfoVOBuilder.class

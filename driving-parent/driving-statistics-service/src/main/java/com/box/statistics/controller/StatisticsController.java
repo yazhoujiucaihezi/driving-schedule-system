@@ -2,6 +2,7 @@ package com.box.statistics.controller;
 
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
+import com.box.common.web.utils.UserContext;
 import com.box.statistics.service.StatisticsService;
 import com.box.statistics.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,7 @@ public class StatisticsController {
     @GetMapping("/student/overview")
     @PreAuthorize("hasRole('STUDENT')")
     public Result<StudentOverviewVO> studentOverview() {
-        Long studentId = Objects.requireNonNull(SecurityContextUtils.getCurrentUser()).getRelatedId();
+        Long studentId = UserContext.getRelatedId();
         return Result.success(statisticsService.studentOverview(studentId));
     }
 }

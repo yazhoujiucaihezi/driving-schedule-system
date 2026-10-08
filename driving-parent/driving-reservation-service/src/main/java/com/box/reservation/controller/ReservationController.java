@@ -3,6 +3,7 @@ package com.box.reservation.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.box.common.result.Result;
 import com.box.common.utils.SecurityContextUtils;
+import com.box.common.web.utils.UserContext;
 import com.box.reservation.dto.*;
 import com.box.reservation.service.ReservationService;
 import com.box.reservation.vo.ReservationOptionVO;
@@ -34,7 +35,7 @@ public class ReservationController {
     public Result<ReservationOptionVO> options(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String timeSlot) {
-        Long studentId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long studentId = UserContext.getRelatedId();
         return Result.success(reservationService.getOptions(studentId, date, timeSlot));
     }
 
@@ -42,7 +43,7 @@ public class ReservationController {
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
     public Result<ReservationVO> create(@Valid @RequestBody ReservationCreateDTO dto) {
-        Long studentId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long studentId = UserContext.getRelatedId();
         return Result.success("预约成功", reservationService.create(dto, studentId));
     }
 
@@ -51,7 +52,7 @@ public class ReservationController {
     @PreAuthorize("hasAnyRole('STUDENT','ADMIN')")
     public Result<String> cancel(@PathVariable Long id, @RequestBody(required = false) ReservationCancelDTO dto) {
         if (dto == null) dto = new ReservationCancelDTO();
-        Long operatorId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long operatorId = UserContext.getRelatedId();
         String role = SecurityContextUtils.getCurrentUserRole();
         reservationService.cancel(id, dto, operatorId, role);
         return Result.success("取消预约成功");
@@ -63,7 +64,7 @@ public class ReservationController {
     public Result<Page<ReservationVO>> my(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        Long studentId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long studentId = UserContext.getRelatedId();
         return Result.success(reservationService.myReservations(studentId, page, size));
     }
 
@@ -74,7 +75,7 @@ public class ReservationController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer size) {
-        Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long coachId = UserContext.getRelatedId();
         return Result.success(reservationService.coachToday(coachId, date, page, size));
     }
 
@@ -89,7 +90,7 @@ public class ReservationController {
     @PostMapping("/{id}/complete")
     @PreAuthorize("hasRole('COACH')")
     public Result<String> complete(@PathVariable Long id, @Valid @RequestBody TrainingCompleteDTO dto) {
-        Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long coachId = UserContext.getRelatedId();
         reservationService.complete(id, dto, coachId);
         return Result.success("练车完成");
     }
@@ -99,7 +100,7 @@ public class ReservationController {
     @PreAuthorize("hasRole('COACH')")
     public Result<String> absent(@PathVariable Long id, @RequestBody(required = false) TrainingAbsentDTO dto) {
         if (dto == null) dto = new TrainingAbsentDTO();
-        Long coachId = SecurityContextUtils.getCurrentUser().getRelatedId();
+        Long coachId = UserContext.getRelatedId();
         reservationService.markAbsent(id, dto.getReason(), coachId);
         return Result.success("已标记缺席");
     }
