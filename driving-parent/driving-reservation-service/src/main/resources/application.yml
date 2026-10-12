@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: driving-reservation-service
+  rabbitmq:
+    host: 192.168.181.128
+    port: 5672
+    username: box
+    password: 123
   data:
     redis:
       host: 192.168.181.128

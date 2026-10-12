@@ -1,0 +1,14 @@
+server:
+  port: 18090
+spring:
+  application:
+    name: driving-notification-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.181.128:8848
+  rabbitmq:
+    host: 192.168.181.128
+    port: 5672
+    username: box
+    password: 123

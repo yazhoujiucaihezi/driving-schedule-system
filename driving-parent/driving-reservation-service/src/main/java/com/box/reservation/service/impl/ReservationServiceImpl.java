@@ -28,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,8 @@ import org.springframework.util.StringUtils;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -60,6 +64,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final TrainingRecordFeignClient trainingRecordFeignClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
+    private final RabbitTemplate rabbitTemplate;
     @Override
     public ReservationOptionVO getOptions(Long studentId, LocalDate date, String timeSlot) {
         Result<StudentDTO> result = studentFeignClient.getById(studentId);
@@ -140,6 +145,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @RabbitListener(queues = "reservation.success.queue")
     public ReservationVO create(ReservationCreateDTO dto, Long studentId) {
         Long scheduleId = dto.getScheduleId();
 
@@ -214,7 +220,14 @@ public class ReservationServiceImpl implements ReservationService {
             }
             r.setCreateTime(LocalDateTime.now());
             reservationMapper.insert(r);
-
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("reservationId", r.getId());
+            msg.put("studentId", r.getStudentId());
+            msg.put("coachId", r.getActualCoachId());
+            msg.put("date", r.getReservationDate().toString());
+            msg.put("timeSlot", r.getTimeSlot());
+            log.info("预约成功！ ：{}", msg);
+            rabbitTemplate.convertAndSend("reservation.success.queue", msg);
             return toVO(r);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
