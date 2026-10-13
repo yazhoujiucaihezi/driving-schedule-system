@@ -15,6 +15,7 @@ import com.box.api.vehicle.VehicleFeignClient;
 import com.box.common.exception.BusinessException;
 import com.box.common.result.Result;
 import com.box.reservation.common.constant.RedisKeyConstants;
+import com.box.reservation.config.MQConfig;
 import com.box.reservation.dto.ReservationCancelDTO;
 import com.box.reservation.dto.ReservationCreateDTO;
 import com.box.reservation.dto.ReservationQueryDTO;
@@ -227,7 +228,13 @@ public class ReservationServiceImpl implements ReservationService {
             msg.put("date", r.getReservationDate().toString());
             msg.put("timeSlot", r.getTimeSlot());
             log.info("预约成功！ ：{}", msg);
-            rabbitTemplate.convertAndSend("reservation.success.queue", msg);
+            rabbitTemplate.convertAndSend(MQConfig.EXCHANGE,MQConfig.ROUTING_KEY, msg);
+
+            Map<String, Object> delayMsg = new HashMap<>();
+            delayMsg.put("reservationId", r.getId());
+            rabbitTemplate.convertAndSend("",MQConfig.DQUEUE, delayMsg);
+            log.info("已发送延迟消息");
+
             return toVO(r);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
