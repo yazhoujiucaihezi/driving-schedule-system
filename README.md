@@ -106,7 +106,3 @@ cd frontend && npm install && npm run dev
 ## 系统边界
 
 本系统不涉及：考试预约、考试成绩、交管系统对接、缴费、合同管理。
-
-## 文档
-
-详见 [docs/](docs/) 目录中的答辩文档。
