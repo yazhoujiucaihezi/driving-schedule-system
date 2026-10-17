@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.box")
 @EnableMethodSecurity
 @EnableFeignClients(basePackages = "com.box.api")
 public class ReservationServiceApplication {

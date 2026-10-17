@@ -69,9 +69,15 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public ReservationOptionVO getOptions(Long studentId, LocalDate date, String timeSlot) {
         Result<StudentDTO> result = studentFeignClient.getById(studentId);
+        //判断如果是降级（code != 200），直接抛出降级的提示
+        if (result == null || result.getCode() != 200) {
+            // 直接把降级类里写的 "学员服务暂不可用" 抛出去
+            throw new BusinessException(result != null ? result.getMessage() : "学员服务不可用");
+        }
+
+        // 正常获取数据
         StudentDTO student = result.getData();
         if (student == null) throw new BusinessException("学员信息不存在");
-
         ReservationOptionVO vo = new ReservationOptionVO();
         ReservationOptionVO.MainCoachOption opt = new ReservationOptionVO.MainCoachOption();
 
@@ -109,8 +115,8 @@ public class ReservationServiceImpl implements ReservationService {
                     .stream()
                     .filter(s -> !s.getCoachId().equals(student.getMainCoachId())) // 排除主教练
                     .filter(s -> {
-                        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
-                        return c != null && "NORMAL".equals(c.getStatus());
+                        Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
+                        return c != null && "NORMAL".equals(c.getData().getStatus());
                     })
                     .sorted((a, b) -> Integer.compare(
                             b.getMaxStudents() - b.getCurrentStudents(),
@@ -124,8 +130,8 @@ public class ReservationServiceImpl implements ReservationService {
                         ao.setMaxStudents(s.getMaxStudents());
                         ao.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
                         ao.setRecommendReason("该教练当前剩余 " + ao.getRemainCount() + " 个名额");
-                        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
-                        ao.setCoachName(c != null ? c.getName() : "未知");
+                        Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
+                        ao.setCoachName(c != null ? c.getData().getName() : "未知");
                         if (s.getVehicleId() != null) {
                             VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
                             if (v != null && "NORMAL".equals(v.getStatus())) {
@@ -158,7 +164,17 @@ public class ReservationServiceImpl implements ReservationService {
         stringRedisTemplate.opsForValue().set(limitKey, "1", Duration.ofSeconds(5));
 
         // --- 2. 加锁前基础校验 ---
-        StudentDTO student = studentFeignClient.getById(studentId).getData();
+        // 先获取完整的 Result 结果
+        Result<StudentDTO> studentResult = studentFeignClient.getById(studentId);
+
+        // 判断是否触发了降级或者调用失败
+        if (studentResult == null || studentResult.getCode() != 200) {
+            // 直接把降级类里写的 "学员服务暂不可用" 抛出去
+            throw new BusinessException(studentResult != null ? studentResult.getMessage() : "学员服务不可用");
+        }
+
+        // 正常获取数据
+        StudentDTO student = studentResult.getData();
         if (student == null) throw new BusinessException("学员信息不存在");
 
         // --- 3. Redisson 分布式锁 ---
@@ -174,7 +190,11 @@ public class ReservationServiceImpl implements ReservationService {
             }
 
             // --- 4. 锁内重新查询排班（避免使用加锁前可能过期的数据） ---
-            ScheduleDTO schedule = scheduleFeignClient.getById(scheduleId).getData();
+            Result<ScheduleDTO> schedResult = scheduleFeignClient.getById(scheduleId);
+            if (schedResult == null || schedResult.getCode() != 200) {
+                throw new BusinessException(schedResult != null ? schedResult.getMessage() : "排班服务不可用");
+            }
+            ScheduleDTO schedule = schedResult.getData();
             if (schedule == null) throw new BusinessException("排班不存在");
             if (!"OPEN".equals(schedule.getStatus())) throw new BusinessException("该排班未开放预约");
 
@@ -355,8 +375,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private void fillCoachAndVehicle(ReservationOptionVO.MainCoachOption opt, ScheduleDTO s) {
-        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
-        opt.setCoachName(c != null ? c.getName() : "未知");
+        Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
+        opt.setCoachName(c != null ? c.getData().getName() : "未知");
         if (s.getVehicleId() != null) {
             VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
             opt.setVehicleId(s.getVehicleId());
@@ -480,10 +500,6 @@ public class ReservationServiceImpl implements ReservationService {
 
         StudentDTO st = studentFeignClient.getById(r.getStudentId()).getData();
         if (st != null) { vo.setStudentName(st.getName()); vo.setStudentPhone(st.getPhone()); }
-        CoachDTO mc = coachFeignClient.getCoachById(r.getMainCoachId());
-        if (mc != null) vo.setMainCoachName(mc.getName());
-        CoachDTO ac = coachFeignClient.getCoachById(r.getActualCoachId());
-        if (ac != null) vo.setActualCoachName(ac.getName());
         if (r.getVehicleId() != null) {
             VehicleDTO v = vehicleFeignClient.getById(r.getVehicleId());
             if (v != null) vo.setPlateNumber(v.getPlateNumber());

@@ -1,5 +1,6 @@
 package com.box.api.schedule;
 
+import com.box.api.fallback.ScheduleFeignClientFallback;
 import com.box.common.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@FeignClient(name = "driving-schedule-service")
+@FeignClient(name = "driving-schedule-service", fallback = ScheduleFeignClientFallback.class)
 public interface ScheduleFeignClient {
 
     @GetMapping("/internal/schedule/{id}")

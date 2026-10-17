@@ -1,5 +1,6 @@
 package com.box.api.student;
 
+import com.box.api.fallback.StudentFeignClientFallback;
 import com.box.common.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
-@FeignClient(name = "driving-student-service")
+@FeignClient(name = "driving-student-service", fallback = StudentFeignClientFallback.class)
 public interface StudentFeignClient {
 
     @GetMapping("/internal/student/by-id/{id}")

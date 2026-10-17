@@ -23,3 +23,26 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.181.128:8848
+    sentinel:
+      transport:
+        dashboard: 192.168.181.128:8080
+        port: 8719
+        client-ip: 192.168.181.1
+      eager: true
+      datasource:
+        flow:
+          nacos:
+            server-addr: 192.168.181.128:8848
+            data-id: driving-reservation-service-flow-rules
+            group-id: SENTINEL_GROUP
+            data-type: json
+            rule-type: flow
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 5000
+feign:
+  sentinel:
+    enabled: true

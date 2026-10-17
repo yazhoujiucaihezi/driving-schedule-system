@@ -36,7 +36,7 @@ public class MQConfig {
     public Queue dqueue() {
         return QueueBuilder
                 .durable(DQUEUE)
-                .ttl(30000)
+                .ttl(300000)
                 .deadLetterExchange(DEXCHANGE)
                 .deadLetterRoutingKey(ABSENT_KEY)
                 .build();
