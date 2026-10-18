@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
         // 校验绑定对象
         if ("COACH".equals(dto.getRole())) {
             if (dto.getRelatedId() == null) throw new BusinessException("教练账号必须绑定教练ID");
-            CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getRelatedId());
+            CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getRelatedId()).getData();
             if (coachDTO == null) throw new BusinessException("绑定的教练不存在");
             // 一个教练只能有一个账号
             Long exist = sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
     private String getRelatedName(SysUser u) {
         if (u.getRelatedId() == null) return null;
         if ("COACH".equals(u.getRole())) {
-            CoachDTO coachDTO = coachFeignClient.getCoachById(u.getRelatedId());
+            CoachDTO coachDTO = coachFeignClient.getCoachById(u.getRelatedId()).getData();
             if (coachDTO == null || coachDTO.getName() == null) return null;
             return coachDTO.getName();
         }

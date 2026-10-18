@@ -76,8 +76,8 @@ public class TrainingRecordServiceImpl implements TrainingRecordService {
         vo.setCreateTime(r.getCreateTime());
         Result<StudentDTO> s = studentFeignClient.getById(r.getStudentId());
         if (s != null) vo.setStudentName(s.getData().getName());
-        CoachDTO c = coachFeignClient.getCoachById(r.getCoachId());
-        if (c != null) vo.setCoachName(c.getName());
+        Result<CoachDTO> coachResult = coachFeignClient.getCoachById(r.getCoachId());
+        if (coachResult != null) vo.setCoachName(coachResult.getData().getName());
         if (r.getVehicleId() != null) {
             VehicleDTO v = vehicleFeignClient.getById(r.getVehicleId());
             if (v != null) vo.setPlateNumber(v.getPlateNumber());

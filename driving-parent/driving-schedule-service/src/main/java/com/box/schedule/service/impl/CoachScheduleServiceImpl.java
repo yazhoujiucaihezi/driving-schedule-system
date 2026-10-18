@@ -7,6 +7,7 @@ import com.box.api.coach.CoachFeignClient;
 import com.box.api.vehicle.VehicleDTO;
 import com.box.api.vehicle.VehicleFeignClient;
 import com.box.common.exception.BusinessException;
+import com.box.common.result.Result;
 import com.box.schedule.dto.ScheduleBatchCreateDTO;
 import com.box.schedule.dto.ScheduleCreateDTO;
 import com.box.schedule.dto.ScheduleQueryDTO;
@@ -64,9 +65,9 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public ScheduleVO create(ScheduleCreateDTO dto) {
         // 1. 校验教练
-        CoachDTO coach = coachFeignClient.getCoachById(dto.getCoachId());
+        Result<CoachDTO> coach = coachFeignClient.getCoachById(dto.getCoachId());
         if (coach == null) throw new BusinessException("教练不存在");
-        if (!"NORMAL".equals(coach.getStatus())) throw new BusinessException("教练已停用，不能创建排班");
+        if (!"NORMAL".equals(coach.getData().getStatus())) throw new BusinessException("教练已停用，不能创建排班");
 
         // 2. 校验时间段合法性
         if (!List.of("MORNING", "AFTERNOON").contains(dto.getTimeSlot())) {
@@ -137,8 +138,8 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         int created = 0, skipped = 0;
 
         for (Long coachId : dto.getCoachIds()) {
-            CoachDTO coach = coachFeignClient.getCoachById(coachId);
-            if (coach == null || !"NORMAL".equals(coach.getStatus())) { skipped++; continue; }
+            Result<CoachDTO> coach = coachFeignClient.getCoachById(coachId);
+            if (coach == null || !"NORMAL".equals(coach.getData().getStatus())) { skipped++; continue; }
 
             for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
                 for (String slot : dto.getTimeSlots()) {
@@ -190,8 +191,8 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
                     vo.setScheduleId(s.getId());
                     vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
                     // 填充教练名和车牌
-                    CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
-                    vo.setCoachName(c != null ? c.getName() : "未知");
+                    Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
+                    vo.setCoachName(c != null ? c.getData().getName() : "未知");
                     if (s.getVehicleId() != null) {
                         VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
                         vo.setPlateNumber(v != null ? v.getPlateNumber() : null);
@@ -248,8 +249,8 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         ScheduleVO vo = new ScheduleVO();
         BeanUtils.copyProperties(s, vo);
         vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
-        CoachDTO c = coachFeignClient.getCoachById(s.getCoachId());
-        vo.setCoachName(c != null ? c.getName() : "未知");
+        Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
+        vo.setCoachName(c != null ? c.getData().getName() : "未知");
         if (s.getVehicleId() != null) {
             VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
             vo.setPlateNumber(v != null ? v.getPlateNumber() : null);

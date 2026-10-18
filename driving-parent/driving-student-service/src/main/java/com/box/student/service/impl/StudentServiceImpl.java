@@ -71,7 +71,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(rollbackFor = Exception.class)
     public StudentVO create(StudentCreateDTO dto) {
         // 校验主教练是否存在且状态正常
-        CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getMainCoachId());
+        CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getMainCoachId()).getData();
         if (coachDTO == null) {
             throw new BusinessException("所选教练不存在");
         }
@@ -95,7 +95,7 @@ public class StudentServiceImpl implements StudentService {
 
         // 如果更换了主教练，校验新教练是否存在且状态正常
         if (dto.getMainCoachId() != null && !dto.getMainCoachId().equals(student.getMainCoachId())) {
-            CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getMainCoachId());
+            CoachDTO coachDTO = coachFeignClient.getCoachById(dto.getMainCoachId()).getData();
             if (coachDTO == null) {
                 throw new BusinessException("所选教练不存在");
             }
@@ -191,7 +191,7 @@ public class StudentServiceImpl implements StudentService {
         StudentVO vo = new StudentVO();
         BeanUtils.copyProperties(student, vo);
         if (student.getMainCoachId() != null) {
-            CoachDTO coachDTO = coachFeignClient.getCoachById(student.getMainCoachId());
+            CoachDTO coachDTO = coachFeignClient.getCoachById(student.getMainCoachId()).getData();
             vo.setMainCoachName(coachDTO != null ? coachDTO.getName() : "未知");
         }
         return vo;

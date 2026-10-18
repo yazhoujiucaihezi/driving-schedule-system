@@ -164,7 +164,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     /** 校验教练是否存在且为正常状态 */
     private void validateCoach(Long coachId) {
-        CoachDTO coach = coachFeignClient.getCoachById(coachId);
+        CoachDTO coach = coachFeignClient.getCoachById(coachId).getData();
         if (coach == null) {
             throw new BusinessException("绑定的教练不存在");
         }
@@ -189,7 +189,7 @@ public class VehicleServiceImpl implements VehicleService {
         VehicleVO vo = new VehicleVO();
         BeanUtils.copyProperties(v, vo);
         if (v.getCoachId() != null) {
-            CoachDTO coach = coachFeignClient.getCoachById(v.getCoachId());
+            CoachDTO coach = coachFeignClient.getCoachById(v.getCoachId()).getData();
             vo.setCoachName(coach != null ? coach.getName() : "未绑定");
         }
         return vo;
