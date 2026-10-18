@@ -14,13 +14,22 @@
 
 ---
 
-## 📸 系统界面与压测预览
+## 📸 系统界面与运行预览
 
-> 💡 提示：将截图直接粘贴至此处后，建议使用 `<img width="85%" src="图片链接" />` 替换默认标签以保持最佳视觉比例。
-
+<!-- 左右并排：前端统计看板 + Nacos服务列表 -->
 <div align="center">
-  <!-- 在此处替换你的系统界面截图或压测截图 -->
-  <!-- <img width="85%" src="你的图片地址1" alt="系统界面预览" /> -->
+  <!-- 👇 替换为你统计看板的图片链接 -->
+  <img width="85%" src="https://github.com/user-attachments/assets/3701b8f7-e53b-40a5-9de4-6ddb91c23dcb" alt="统计列表" />
+  <!-- 👇 替换为你Nacos/Sentinel的图片链接 -->
+  <img width="85%" src="https://github.com/user-attachments/assets/463ec2fd-9556-4dbf-a281-1e538ade45f5" alt="Nacos 服务列表" />
+  <img width="85%" src="https://github.com/user-attachments/assets/966fa505-bb9c-41cb-8b2b-b86f26dc629c" alt="Sentinel 服务列表" />
+</div>
+
+<!-- 单张大图居中：学员端排班预约/调剂页面 -->
+<div align="center">
+  <br/>
+  <!-- 👇 替换为你学员端调剂页面的图片链接 -->
+  <img width="85%" src="https://github.com/user-attachments/assets/8c31e2f1-1d3f-4074-b615-c4c56c02bdd9" />
 </div>
 
 ---
@@ -125,9 +134,20 @@
 
 ## 📊 性能与并发压测报告
 
-本项目在本地环境下使用 Apache JMeter 5.6.3 进行了基准性能与高并发争抢测试：
+本项目在本地环境下使用 Apache JMeter 5.6.3 及 Go 压测工具进行了基准性能与高并发争抢测试。
 
-### 1. 高并发抢约防超卖与 Sentinel 限流对比压测
+<!-- 左右并排：JMeter压测图 + 数据库防超卖结果图 -->
+<div align="center">
+  <!-- 👇 替换为你 JMeter 黑底压测图链接 -->
+  <img width="85%" src="https://github.com/user-attachments/assets/bf50d88a-6ce4-4f55-834f-874469f7a9f5" alt="JMeter 压测结果" />
+  <!-- 👇 替换为你 数据库 0 超卖截图链接 -->
+  <img width="85%" src="https://github.com/user-attachments/assets/4321f73f-3022-4f0c-b4a5-c2ec0bb6e010" alt="MySQL 0超卖结果" />
+</div>
+<br/>
+
+
+
+### 高并发抢约防超卖与 Sentinel 限流对比压测
 
 *   **压测场景**：模拟 50 个并发线程在 1 秒内同时争抢同一教练同个时段的 10 个可用练车名额（`max_students = 10`）。
 
