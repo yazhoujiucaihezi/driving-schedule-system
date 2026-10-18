@@ -189,5 +189,4 @@ driving-parent/
 
 ## 📄 开源协议
 
-本项目基于 MIT License 开源协议发布。
-```
+本项目基于 MIT License 开源协议发布。 作者：yazhoujiucaihezi | 仓库：https://github.com/yazhoujiucaihezi/driving-schedule-system
