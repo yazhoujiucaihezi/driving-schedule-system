@@ -18,12 +18,14 @@
 
 <div align="center">
   <img width="85%" src="https://github.com/user-attachments/assets/3701b8f7-e53b-40a5-9de4-6ddb91c23dcb" alt="统计驾驶舱看板" />
+  <br/><br/>
   <img width="85%" src="https://github.com/user-attachments/assets/8c31e2f1-1d3f-4074-b615-c4c56c02bdd9" alt="学员端排班预约与调剂" />
 </div>
 
 <div align="center">
   <br/>
   <img width="85%" src="https://github.com/user-attachments/assets/463ec2fd-9556-4dbf-a281-1e538ade45f5" alt="Nacos 服务注册列表" />
+  <br/><br/>
   <img width="85%" src="https://github.com/user-attachments/assets/966fa505-bb9c-41cb-8b2b-b86f26dc629c" alt="Sentinel 流控监控面板" />
 </div>
 
@@ -218,4 +220,4 @@ driving-parent/
 本项目基于 MIT License 开源协议发布。
 
 **作者**：yazhoujiucaihezi | **仓库**：https://github.com/yazhoujiucaihezi/driving-schedule-system
-```
+
