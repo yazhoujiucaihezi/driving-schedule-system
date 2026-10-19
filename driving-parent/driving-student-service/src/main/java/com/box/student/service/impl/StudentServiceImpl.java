@@ -167,10 +167,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void updateById(Long id) {
-        Student s = new Student();
-        s.setId(id);
-        studentMapper.updateById(s);
+    public void incrementCompleteCount(Long id) {
+        studentMapper.incrementCompleteCount(id);
     }
 
     @Override

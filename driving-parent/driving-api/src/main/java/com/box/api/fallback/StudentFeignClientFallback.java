@@ -27,7 +27,8 @@ public class StudentFeignClientFallback implements StudentFeignClient {
     }
 
     @Override
-    public void updateById(Long id) {
-
+    public Result<Void> incrementCompleteCount(Long id) {
+        log.error("调用学员服务（driving-student-service）更新学员信息失败，触发降级。学员ID: {}", id);
+        return Result.error(503, "学员信息校验服务暂时不可用，请稍后再试");
     }
 }

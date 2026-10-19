@@ -405,8 +405,7 @@ public class ReservationServiceImpl implements ReservationService {
         // 学员已完成练车次数 +1
         StudentDTO student = studentFeignClient.getById(r.getStudentId()).getData();
         if (student != null) {
-            student.setCompletedTrainingCount(student.getCompletedTrainingCount() + 1);
-            studentFeignClient.updateById(student.getId());
+            studentFeignClient.incrementCompleteCount(student.getId());
         }
     }
 
@@ -506,4 +505,6 @@ public class ReservationServiceImpl implements ReservationService {
         }
         return vo;
     }
+
+
 }

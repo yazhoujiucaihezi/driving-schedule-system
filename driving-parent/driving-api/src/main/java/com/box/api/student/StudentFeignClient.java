@@ -18,7 +18,7 @@ public interface StudentFeignClient {
     @GetMapping("/internal/student/by-username/{username}")
     Result<List<StudentDTO>> selectList(@PathVariable("username") String username);
 
-    @PostMapping("/internal/student/update-id/{id}")
-    void updateById(@PathVariable("id") Long id);
+    @PostMapping("/internal/student/increment/{id}")
+    Result<Void> incrementCompleteCount(@PathVariable("id") Long id);
 
 }

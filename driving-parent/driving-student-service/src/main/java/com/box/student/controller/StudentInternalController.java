@@ -24,9 +24,10 @@ public class StudentInternalController {
         return Result.success(studentService.getDTOByUsername(username));
     }
 
-    @PostMapping("/update-id/{id}")
-    public void updateById(@PathVariable("id") Long id) {
-        studentService.updateById(id);
+    @PostMapping("/increment/{id}")
+    public Result<Void> incrementCompleteCount(@PathVariable("id") Long id) {
+        studentService.incrementCompleteCount(id);
+        return Result.success();
     }
 
     @GetMapping("/count")
