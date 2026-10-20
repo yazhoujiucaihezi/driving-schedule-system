@@ -176,6 +176,9 @@ public class ReservationServiceImpl implements ReservationService {
         // 正常获取数据
         StudentDTO student = studentResult.getData();
         if (student == null) throw new BusinessException("学员信息不存在");
+        if (!"NORMAL".equals(student.getStatus())){
+            throw new BusinessException("学员状态异常");
+        }
 
         // --- 3. Redisson 分布式锁 ---
         String lockKey = RedisKeyConstants.LOCK_SCHEDULE + scheduleId;

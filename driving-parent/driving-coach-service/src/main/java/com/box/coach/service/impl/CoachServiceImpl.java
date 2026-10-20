@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,8 +125,10 @@ public class CoachServiceImpl implements CoachService {
     }
 
     @Override
-    public Long getCoachCountByStatus(String status) {
-        return coachMapper.selectCount(new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, status));
+    public Long getCountByName(String name, LocalDate date, String timeSlot) {
+        Coach coach = coachMapper.selectOne(new LambdaQueryWrapper<Coach>().eq(Coach::getName, name));
+        Long id = coach.getId();
+        return coachMapper.getCount(id, date, timeSlot);
     }
 
     // ==================== 内部方法 ====================

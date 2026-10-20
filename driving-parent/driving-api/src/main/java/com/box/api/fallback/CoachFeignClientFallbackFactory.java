@@ -6,6 +6,8 @@ import com.box.common.result.Result;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 public class CoachFeignClientFallbackFactory implements FallbackFactory<CoachFeignClient> {
 
@@ -17,6 +19,11 @@ public class CoachFeignClientFallbackFactory implements FallbackFactory<CoachFei
             public Result<CoachDTO> getCoachById(Long id) {
                 return Result.error(503, "教练排班服务暂时不可用，请稍后再试！");
                 }
-            };
+
+            @Override
+            public Result<Integer> getCountByName(String name, LocalDate date, String timeSlot) {
+                return Result.error(503, "教练排班服务暂时不可用，请稍后再试！");
+            }
+        };
     }
 }

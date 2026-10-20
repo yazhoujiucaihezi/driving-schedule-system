@@ -8,6 +8,7 @@ import com.box.coach.dto.CoachUpdateDTO;
 import com.box.coach.vo.CoachSimpleVO;
 import com.box.coach.vo.CoachVO;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,5 +36,5 @@ public interface CoachService {
 
     CoachDTO getCoachById(Long id);
 
-    Long getCoachCountByStatus(String status);
+    Long getCountByName(String name, LocalDate date, String timeSlot);
 }

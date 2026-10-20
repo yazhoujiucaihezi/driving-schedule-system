@@ -20,7 +20,7 @@ public class VehicleInternalController {
         return Result.success(vehicleService.getVehicleDTOById(id));
     }
 
-    @GetMapping("/by-one/{coachId}")
+    @GetMapping("/one")
     public Result<VehicleDTO> getByOne(@RequestParam("coachId") Long coachId,
                                        @RequestParam("status") String status) {
         return Result.success(vehicleService.getVehicleDTOByCoachId(coachId, status));

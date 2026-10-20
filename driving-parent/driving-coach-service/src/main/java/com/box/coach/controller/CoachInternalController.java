@@ -6,6 +6,8 @@ import com.box.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/internal/coach")
 @RequiredArgsConstructor
@@ -22,8 +24,10 @@ public class CoachInternalController {
         return Result.success(coachDTO);
     }
 
-    @GetMapping("/count/status")
-    public Long getCoachCountByStatus(@RequestParam("status") String status) {
-        return coachService.getCoachCountByStatus(status);
+    @GetMapping("/count/name")
+    public Result<Long> getCountByName(@RequestParam("name") String name,
+                               @RequestParam("date") LocalDate date,
+                               @RequestParam("timeSlot") String timeSlot) {
+        return Result.success(coachService.getCountByName(name, date, timeSlot));
     }
 }
