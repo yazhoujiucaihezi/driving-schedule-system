@@ -126,7 +126,21 @@ public class CoachServiceImpl implements CoachService {
 
     @Override
     public Long getCountByName(String name, LocalDate date, String timeSlot) {
-        Coach coach = coachMapper.selectOne(new LambdaQueryWrapper<Coach>().eq(Coach::getName, name));
+        System.out.println("=== 大模型传过来的教练名字是: [" + name + "]");
+        String cleanName = name.replace("教练", "")
+                .replace("师傅", "")
+                .replace("老师", "")
+                .replace("老", "")
+                .replace("小", "")
+                .trim();
+        System.out.println("=== 清洗后用于查询的名字: [" + cleanName + "]");
+
+        Coach coach = coachMapper.selectOne(new LambdaQueryWrapper<Coach>()
+                .like(Coach::getName, name)
+                .last("limit 1"));
+        if (coach == null){
+            throw new RuntimeException("驾校中未找到名叫 [" + name + "] 的教练，请确认名字是否正确。");
+        }
         Long id = coach.getId();
         return coachMapper.getCount(id, date, timeSlot);
     }
