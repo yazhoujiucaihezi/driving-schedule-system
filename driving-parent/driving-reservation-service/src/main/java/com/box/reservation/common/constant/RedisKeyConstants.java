@@ -15,4 +15,6 @@ public final class RedisKeyConstants {
 
     /** 学员预约频率限制：limit:reservation:{studentId} */
     public static final String LIMIT_RESERVATION = "limit:reservation:";
+    /** 预约草稿前缀: ai:draft:{draftId} */
+    public static final String AI_DRAFT = "ai:draft:";
 }

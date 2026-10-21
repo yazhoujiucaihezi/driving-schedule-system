@@ -208,6 +208,14 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
                 .eq(CoachSchedule::getScheduleDate, date));
     }
 
+    @Override
+    public CoachSchedule getByCoach(Long coachId, LocalDate date, String timeSlot) {
+        return scheduleMapper.selectOne(new LambdaQueryWrapper<CoachSchedule>()
+                .eq(CoachSchedule::getCoachId, coachId)
+                .eq(CoachSchedule::getScheduleDate, date)
+                .eq(CoachSchedule::getTimeSlot, timeSlot));
+    }
+
     // ==================== 内部方法 ====================
 
     private CoachSchedule findSchedule(Long id) {

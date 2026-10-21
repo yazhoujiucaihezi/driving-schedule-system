@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/ai/test")
+@RequestMapping("/api/reservations/ai/test")
 @RequiredArgsConstructor
 public class AiTestController {
 

@@ -24,6 +24,11 @@ public class CoachFeignClientFallbackFactory implements FallbackFactory<CoachFei
             public Result<Integer> getCountByName(String name, LocalDate date, String timeSlot) {
                 return Result.error(503, "教练排班服务暂时不可用，请稍后再试！");
             }
+
+            @Override
+            public Result<CoachDTO> getCoachByName(String name) {
+                return Result.error(503, "教练排班服务暂时不可用，请稍后再试！");
+            }
         };
     }
 }

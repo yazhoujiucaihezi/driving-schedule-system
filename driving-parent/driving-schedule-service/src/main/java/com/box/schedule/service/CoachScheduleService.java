@@ -5,6 +5,7 @@ import com.box.schedule.dto.ScheduleBatchCreateDTO;
 import com.box.schedule.dto.ScheduleCreateDTO;
 import com.box.schedule.dto.ScheduleQueryDTO;
 import com.box.schedule.dto.ScheduleUpdateDTO;
+import com.box.schedule.entity.CoachSchedule;
 import com.box.schedule.vo.ScheduleAvailableVO;
 import com.box.schedule.vo.ScheduleVO;
 
@@ -24,4 +25,6 @@ public interface CoachScheduleService {
     List<ScheduleAvailableVO> availableList(LocalDate date, String timeSlot);
 
     Long countByDate(LocalDate date);
+
+    CoachSchedule getByCoach(Long coachId, LocalDate date, String timeSlot);
 }

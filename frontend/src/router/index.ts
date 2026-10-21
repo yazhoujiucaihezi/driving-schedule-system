@@ -28,6 +28,12 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/ai-chat',
+    name: 'AiChat',
+    component: () => import('../views/student/AiChat.vue'), // 把路径换成你刚才复制进去的文件真实位置
+    meta: { title: 'AI 智能助手', requiresAuth: true }
+  },
+  {
     path: '/coach',
     name: 'CoachHome',
     component: () => import('@/views/coach/CoachHomeView.vue'),

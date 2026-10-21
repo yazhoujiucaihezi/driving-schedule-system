@@ -71,4 +71,5 @@ public class CoachController {
         coachService.updateStatus(id, body.get("status"));
         return Result.success("状态修改成功");
     }
+
 }

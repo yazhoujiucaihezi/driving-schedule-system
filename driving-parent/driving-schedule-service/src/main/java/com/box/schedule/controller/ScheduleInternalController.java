@@ -65,6 +65,11 @@ public class ScheduleInternalController {
         return Result.success(scheduleService.countByDate(date));
     }
 
+    @GetMapping("/get-by-coach")
+    public Result<ScheduleDTO> getByCoach(@RequestParam Long coachId, @RequestParam LocalDate date, @RequestParam String timeSlot) {
+        return Result.success(toDTO(scheduleService.getByCoach(coachId, date, timeSlot)));
+    }
+
     private ScheduleDTO toDTO(CoachSchedule s) {
         if (s == null) return null;
         ScheduleDTO d = new ScheduleDTO();

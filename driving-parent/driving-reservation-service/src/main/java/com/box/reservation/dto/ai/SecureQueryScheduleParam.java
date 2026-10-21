@@ -7,6 +7,14 @@ public record SecureQueryScheduleParam(String coachName, LocalDate date, Long st
         if(date.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("日期早于今天");
         }
-        return new SecureQueryScheduleParam(aiParams.coachName(), date, studentId, aiParams.timeSlot());
+        String rawSlot = aiParams.timeSlot();
+        String finalSlot = "MORNING"; // 默认上午
+        if (rawSlot != null) {
+            if (rawSlot.contains("下午") || rawSlot.contains("PM") || rawSlot.contains("AFTERNOON")) {
+                finalSlot = "AFTERNOON";
+            }
+        }
+
+        return new SecureQueryScheduleParam(aiParams.coachName(), date, studentId, finalSlot);
     }
 }

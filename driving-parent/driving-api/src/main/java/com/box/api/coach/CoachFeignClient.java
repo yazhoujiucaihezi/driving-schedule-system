@@ -23,4 +23,6 @@ public interface CoachFeignClient {
                                    @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
                                    @RequestParam("timeSlot") String timeSlot);
 
+    @GetMapping("/internal/coach/get-by-name")
+    Result<CoachDTO> getCoachByName(@RequestParam("name") String name);
 }

@@ -31,4 +31,7 @@ public interface ScheduleFeignClient {
 
     @PostMapping("/internal/schedule/decrease/{id}")
     Result<Integer> decreaseCurrentStudents(@PathVariable("id") Long id);
+
+    @GetMapping("/internal/schedule/get-by-coach")
+    Result<ScheduleDTO> getByCoach(@RequestParam Long coachId, @RequestParam LocalDate date, @RequestParam String timeSlot);
 }

@@ -37,4 +37,6 @@ public interface CoachService {
     CoachDTO getCoachById(Long id);
 
     Long getCountByName(String name, LocalDate date, String timeSlot);
+
+    CoachDTO getCoachByName(String name);
 }

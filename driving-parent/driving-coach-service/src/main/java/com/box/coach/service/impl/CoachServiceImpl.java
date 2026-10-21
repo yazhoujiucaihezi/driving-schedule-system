@@ -126,23 +126,28 @@ public class CoachServiceImpl implements CoachService {
 
     @Override
     public Long getCountByName(String name, LocalDate date, String timeSlot) {
-        System.out.println("=== 大模型传过来的教练名字是: [" + name + "]");
-        String cleanName = name.replace("教练", "")
-                .replace("师傅", "")
-                .replace("老师", "")
-                .replace("老", "")
-                .replace("小", "")
-                .trim();
-        System.out.println("=== 清洗后用于查询的名字: [" + cleanName + "]");
-
+        String cleanName = getCleanName(name);
         Coach coach = coachMapper.selectOne(new LambdaQueryWrapper<Coach>()
-                .like(Coach::getName, name)
+                .like(Coach::getName, cleanName)
                 .last("limit 1"));
         if (coach == null){
             throw new RuntimeException("驾校中未找到名叫 [" + name + "] 的教练，请确认名字是否正确。");
         }
         Long id = coach.getId();
-        return coachMapper.getCount(id, date, timeSlot);
+        Long count = coachMapper.getCount(id, date, timeSlot);
+        return count==null?0L:count;
+    }
+
+    @Override
+    public CoachDTO getCoachByName(String name) {
+        String cleanName = getCleanName(name);
+        Coach coach = coachMapper.selectOne(
+                new LambdaQueryWrapper<Coach>().like(Coach::getName, cleanName)
+                        .last("limit 1"));
+        if (coach == null) {
+            throw new RuntimeException("未找到该教练");
+        }
+        return getCoachById(coach.getId());
     }
 
     // ==================== 内部方法 ====================
@@ -173,5 +178,13 @@ public class CoachServiceImpl implements CoachService {
         CoachVO vo = new CoachVO();
         BeanUtils.copyProperties(coach, vo);
         return vo;
+    }
+    private String getCleanName(String name) {
+        return name.replace("教练", "")
+                .replace("师傅", "")
+                .replace("老师", "")
+                .replace("老", "")
+                .replace("小", "")
+                .trim();
     }
 }

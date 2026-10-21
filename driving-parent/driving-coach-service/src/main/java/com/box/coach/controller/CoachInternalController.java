@@ -30,4 +30,10 @@ public class CoachInternalController {
                                @RequestParam("timeSlot") String timeSlot) {
         return Result.success(coachService.getCountByName(name, date, timeSlot));
     }
+
+    @GetMapping("/get-by-name")
+    Result<CoachDTO> getCoachByName(@RequestParam("name") String name){
+        return Result.success(coachService.getCoachByName(name));
+    }
+
 }
