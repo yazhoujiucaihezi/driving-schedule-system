@@ -18,18 +18,21 @@ import com.box.schedule.service.CoachScheduleService;
 import com.box.schedule.vo.ScheduleAvailableVO;
 import com.box.schedule.vo.ScheduleVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * 排班业务实现
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CoachScheduleServiceImpl implements CoachScheduleService {
@@ -135,51 +138,97 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Integer> batchCreate(ScheduleBatchCreateDTO dto) {
-        int created = 0, skipped = 0;
+        Integer created = 0;
+        LocalDate startDate = dto.getStartDate();
+        long between = ChronoUnit.DAYS.between(startDate, dto.getEndDate()) + 1;
+            List<CoachDTO> all = coachFeignClient.getByIds(dto.getCoachIds()).getData();
+        if (all == null || all.isEmpty()) {
+            return Map.of("created", 0, "skipped", 0);
+        }
 
-        for (Long coachId : dto.getCoachIds()) {
-            Result<CoachDTO> coach = coachFeignClient.getCoachById(coachId);
-            if (coach == null || !"NORMAL".equals(coach.getData().getStatus())) { skipped++; continue; }
-
-            for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
-                for (String slot : dto.getTimeSlots()) {
-                    // 校验是否已存在
-                    Long count = scheduleMapper.selectCount(new LambdaQueryWrapper<CoachSchedule>()
-                            .eq(CoachSchedule::getCoachId, coachId)
-                            .eq(CoachSchedule::getScheduleDate, date)
-                            .eq(CoachSchedule::getTimeSlot, slot));
-                    if (count > 0) { skipped++; continue; }
-
-                    CoachSchedule s = new CoachSchedule();
-                    s.setCoachId(coachId);
-                    s.setScheduleDate(date);
-                    s.setTimeSlot(slot);
-                    s.setMaxStudents(dto.getMaxStudents());
-                    s.setCurrentStudents(0);
-                    s.setStatus("OPEN");
-                    s.setRemark(dto.getRemark());
-
-                    // 自动绑定车辆
-                    if (Boolean.TRUE.equals(dto.getAutoBindVehicle())) {
-                        VehicleDTO v = vehicleFeignClient.getOne(coachId, "NORMAL");
-                        if (v != null) s.setVehicleId(v.getId());
-                    }
-
-                    scheduleMapper.insert(s);
-                    created++;
-                }
+        Integer total = Math.toIntExact(all.size() * between * dto.getTimeSlots().size());
+        List<CoachDTO> normal = all.stream().filter(coachDTO -> "NORMAL".equals(coachDTO.getStatus())).toList();
+        List<Long> normalIds = new ArrayList<>();
+        for (CoachDTO coachDTO : normal) {
+            normalIds.add(coachDTO.getId());
+        }
+        Set<String> exists = new HashSet<>();
+        List<CoachSchedule> existList = scheduleMapper.selectList(
+                new LambdaQueryWrapper<CoachSchedule>()
+                        .in(CoachSchedule::getCoachId, normalIds)
+                        .between(CoachSchedule::getScheduleDate, startDate, dto.getEndDate())
+        );
+        for (CoachSchedule schedule : existList) {
+            exists.add(scheduleKey(schedule.getCoachId(), schedule.getScheduleDate(), schedule.getTimeSlot()));
+        }
+        // 自动绑车：一次拿全部车，本地按状态筛出正常的，再按教练分组
+        Map<Long, Long> vehicleMap = new HashMap<>();
+        if (Boolean.TRUE.equals(dto.getAutoBindVehicle())) {
+            Result<List<VehicleDTO>> vr = vehicleFeignClient.getAll();
+            List<VehicleDTO> cars = normalVehicle(vr == null ? null : vr.getData());
+            for (VehicleDTO car : cars) {
+                vehicleMap.putIfAbsent(car.getCoachId(), car.getId());
             }
         }
 
-        Map<String, Integer> result = new HashMap<>();
-        result.put("created", created);
-        result.put("skipped", skipped);
-        return result;
+        List<CoachSchedule> toInsert = new ArrayList<>();
+        while (!startDate.isAfter(dto.getEndDate())) {
+            for (CoachDTO coachDTO : normal) {
+                for (String timeSlot : dto.getTimeSlots()) {
+                    String key = scheduleKey(coachDTO.getId(), startDate, timeSlot);
+                    if (exists.contains(key)) {
+                        continue;
+                    }
+                    CoachSchedule coachSchedule = new CoachSchedule();
+                    coachSchedule.setCoachId(coachDTO.getId());
+                    coachSchedule.setVehicleId(vehicleMap.get(coachDTO.getId()));
+                    coachSchedule.setScheduleDate(startDate);
+                    coachSchedule.setTimeSlot(timeSlot);
+                    coachSchedule.setMaxStudents(dto.getMaxStudents());
+                    coachSchedule.setCurrentStudents(0);
+                    coachSchedule.setStatus("OPEN");
+                    coachSchedule.setRemark(dto.getRemark());
+                    toInsert.add(coachSchedule);
+                }
+                if (!toInsert.isEmpty()){
+                    for (CoachSchedule schedule : toInsert) {
+                        scheduleMapper.insert(schedule);
+                        created++;
+                    }
+                }
+                toInsert.clear();
+            }
+            startDate = startDate.plusDays(1);
+        }
+        Integer skipped = total - created;
+        Map<String,Integer> map =new HashMap<>();
+        map.put("created",created);
+        map.put("skipped",skipped);
+        return map;
+
+    }
+
+    /** 从全部车辆里筛出状态正常的 */
+    private List<VehicleDTO> normalVehicle(List<VehicleDTO> vehicles) {
+        if (vehicles == null || vehicles.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<VehicleDTO> normal = new ArrayList<>();
+        for (VehicleDTO v : vehicles) {
+            if ("NORMAL".equals(v.getStatus())) {
+                normal.add(v);
+            }
+        }
+        return normal;
+    }
+
+    /** 排班唯一键：教练ID_日期_时段，用于批量判重 */
+    private String scheduleKey(Long coachId, LocalDate date, String timeSlot) {
+        return coachId + "_" + date + "_" + timeSlot;
     }
 
     @Override
-    public List<ScheduleAvailableVO> availableList(LocalDate date, String timeSlot) {
-        return scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>()
+    public List<ScheduleAvailableVO> availableList(LocalDate date, String timeSlot) {        return scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>()
                         .eq(CoachSchedule::getScheduleDate, date)
                         .eq(CoachSchedule::getTimeSlot, timeSlot)
                         .eq(CoachSchedule::getStatus, "OPEN")
@@ -192,9 +241,10 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
                     vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
                     // 填充教练名和车牌
                     Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
-                    vo.setCoachName(c != null ? c.getData().getName() : "未知");
+                    vo.setCoachName(c != null && c.getData() != null ? c.getData().getName() : "未知");
                     if (s.getVehicleId() != null) {
-                        VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
+                        Result<VehicleDTO> vr = vehicleFeignClient.getById(s.getVehicleId());
+                        VehicleDTO v = vr == null ? null : vr.getData();
                         vo.setPlateNumber(v != null ? v.getPlateNumber() : null);
                     }
                     return vo;
@@ -225,8 +275,9 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
     }
 
     private void validateVehicle(Long vehicleId) {
-        VehicleDTO v = vehicleFeignClient.getById(vehicleId);
-        if (v == null) throw new BusinessException("车辆不存在");
+        Result<VehicleDTO> vr = vehicleFeignClient.getById(vehicleId);
+        if (vr == null || vr.getData() == null) throw new BusinessException("车辆不存在");
+        VehicleDTO v = vr.getData();
         if (!"NORMAL".equals(v.getStatus())) throw new BusinessException("车辆当前不可用，不能绑定排班");
     }
 
@@ -258,9 +309,10 @@ public class CoachScheduleServiceImpl implements CoachScheduleService {
         BeanUtils.copyProperties(s, vo);
         vo.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
         Result<CoachDTO> c = coachFeignClient.getCoachById(s.getCoachId());
-        vo.setCoachName(c != null ? c.getData().getName() : "未知");
+        vo.setCoachName(c != null && c.getData() != null ? c.getData().getName() : "未知");
         if (s.getVehicleId() != null) {
-            VehicleDTO v = vehicleFeignClient.getById(s.getVehicleId());
+            Result<VehicleDTO> vr = vehicleFeignClient.getById(s.getVehicleId());
+            VehicleDTO v = vr == null ? null : vr.getData();
             vo.setPlateNumber(v != null ? v.getPlateNumber() : null);
         }
         return vo;

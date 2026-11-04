@@ -1,87 +1,79 @@
 package com.box.common.utils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * JWT 工具类 — Token 生成与解析
+ * JWT 工具类 —— 令牌生成与解析
  * <p>
- * 使用 HMAC-SHA256 算法签名。
- * Token 中存储 userId、username、role、relatedId，
- * 后续接口从 Token 中解析用户身份而无需每次查询数据库。
+ * 网关验签、下游取身份都依赖本类，属于全链路鉴权的起点。
  * </p>
  */
 @Component
 public class JwtUtils {
 
-    /** JWT 签名密钥（至少 256 位，对应 HS256） */
-    @Value("${jwt.secret:DrivingSchoolSecretKey2026ForJWTTokenSigning!!}")
-    private String secret;
+    private final SecretKey key;
+    private final long expiration;
+    public enum TokenStatus { VALID, EXPIRED, INVALID }
 
-    /** Token 有效期（毫秒），默认 24 小时 */
-    @Value("${jwt.expiration:86400000}")
-    private long expiration;
-
-    /**
-     * 生成 JWT Token
-     *
-     * @param userId    用户ID
-     * @param username  登录账号
-     * @param role      角色
-     * @param relatedId 关联业务ID
-     * @return JWT Token 字符串
-     */
-    public String generateToken(Long userId, String username, String role, Long relatedId) {
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        Date now = new Date();
-
-        return Jwts.builder()
-                .subject(String.valueOf(userId))
-                .claim("userId", userId)
-                .claim("username", username)
-                .claim("role", role)
-                .claim("relatedId", relatedId)
-                .issuedAt(now)
-                .expiration(new Date(now.getTime() + expiration))
-                .signWith(key)
-                .compact();
+    public JwtUtils(@Value("${jwt.secret}") String secret,
+                    @Value("${jwt.expiration}") long expiration) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expiration = expiration;
     }
 
-    /**
-     * 解析 JWT Token 中的 Claims
-     *
-     * @param token JWT Token 字符串
-     * @return Claims 对象，解析失败返回 null
-     */
+    public String generateToken(Long userId, String username, String role, Long relatedId) {
+        long now = System.currentTimeMillis();
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId",userId);
+        map.put("username",username);
+        map.put("role",role);
+        map.put("relatedId",relatedId);
+        return Jwts.builder()
+                .claims(map)
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + expiration))
+                .signWith(key,Jwts.SIG.HS256)
+                .compact();
+
+    }
+
     public Claims parseToken(String token) {
+        if (token == null || token.isBlank()){
+            return null;
+        }
         try {
-            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
             return Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-        } catch (Exception e) {
-            // Token 过期、签名错误、格式错误等均返回 null
+        } catch (JwtException | IllegalArgumentException e) {
             return null;
         }
     }
 
-    /**
-     * 判断 Token 是否有效
-     *
-     * @param token JWT Token 字符串
-     * @return true 表示 Token 存在且未过期
-     */
-    public boolean validateToken(String token) {
-        Claims claims = parseToken(token);
-        return claims != null && !claims.getExpiration().before(new Date());
+    public TokenStatus validate(String token) {
+        if (token == null || token.isBlank()) return TokenStatus.INVALID;
+        try {
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            return TokenStatus.VALID;
+        } catch (ExpiredJwtException e) {
+            return TokenStatus.EXPIRED;
+        } catch (JwtException | IllegalArgumentException e) {
+            return TokenStatus.INVALID;
+        }
     }
 }

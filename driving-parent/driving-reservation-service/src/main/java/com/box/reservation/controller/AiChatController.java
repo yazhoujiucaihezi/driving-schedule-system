@@ -3,13 +3,13 @@ package com.box.reservation.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.box.common.web.utils.UserContext;
-import com.box.reservation.ai.tool.ScheduleTools;
 import com.box.reservation.common.constant.RedisKeyConstants;
 import com.box.reservation.dto.ReservationCreateDTO;
 import com.box.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ToolContext;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -18,40 +18,44 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reservations/ai")
 @RequiredArgsConstructor
+@Slf4j
 public class AiChatController {
 
-    private final ChatClient.Builder chatClientBuilder;
-    private final ScheduleTools scheduleTools;
     private final StringRedisTemplate redisTemplate;
     private final ReservationService reservationService;
+    private final ChatClient reservationChatClient;
 
-    @SuppressWarnings("CallToPrintStackTrace")
     @GetMapping("/chat")
     public String chat(@RequestParam String message) {
-
         Long studentId = UserContext.getRelatedId();
-
-        var toolContext = new ToolContext(Map.of("studentId", studentId));
-
-        // 发起大模型对话
+        if (studentId == null){
+            return "请先登录";
+        }
         try {
-            return chatClientBuilder
-                    .build()
-                    .prompt()
-                    .system("你是一个驾校助手。请注意，今天的日期是：" + LocalDate.now() + "。用户的相对时间（如明天、后天）请自行推算为绝对日期。" + " \uD83D\uDEA8 极其重要的系统指令（必须严格遵守）：\n" +
-                            "    1. 如果用户想预约，先调用 querySchedule 查询主教练名额。\n" +
-                            "    2. 如果主教练满员，调用 queryAdjustableCoaches 查调剂教练。\n" +
-                            "    3. 绝不允许你直接回复用户\"预约成功\"！你没有任何权限直接预约！\n" +
-                            "    4. 你必须调用 createReservationDraft 工具生成草稿。\n" +
-                            "    5. 拿到草稿工具返回的结果后，必须原样输出给用户（例如：\"草稿已生成，请确认：[DRAFT_xxx]\"）")
+            String systemPrompt = """
+                    你是驾校预约助手。今天的日期是 %s。
+                    
+                    你能做的事：
+                    1. 查某位教练某个时段还剩几个名额
+                    2. 主教练满了时，列出同日期同时段其他有空位的教练
+                    3. 名额充足时生成预约草稿，交给用户确认
+                    
+                    规则：
+                    - 你没有直接下单的权限。只能查询和生成草稿，必须等用户明确确认后，由用户在页面上点确认完成下单。
+                    - 调用工具时，日期参数一律传 yyyy-MM-dd 格式的绝对日期。用户说「明天」「下周三」时，必须先根据今天日期换算成具体日期，绝不能把这类相对描述直接传给工具。
+                    - 用户没说清教练姓名或日期时，先问清楚再调用工具。
+                    - 工具返回的错误文本原样转述给用户，不要编造名额或预约结果。
+                    """.formatted(LocalDate.now());
+            return  reservationChatClient.prompt()
+                    .system(systemPrompt)                                        // ← 新增：把上面拼好的 prompt 传进去
                     .user(message)
-                    .tools(scheduleTools)         // 把工具给大模型
-                    .toolContext(toolContext.getContext())     // 把数据塞进去
+                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID,studentId))
+                    .toolContext(Map.of("studentId", studentId))
                     .call()
                     .content();
         } catch (Exception e) {
-            e.printStackTrace();
-            return "AI 调用异常: " + e.getMessage();
+            log.error("AI 对话失败", e);
+            return "预约助手暂不可用，请稍后重试";
         }
     }
 
@@ -71,7 +75,7 @@ public class AiChatController {
             // 3. 组装你原来微服务下单用的 DTO
             ReservationCreateDTO dto = new ReservationCreateDTO();
             dto.setScheduleId(scheduleId);
-            // dto.setIsAdjusted(false); // 如果是调剂，你需要在这里处理
+            dto.setAdjusted(false); // 如果是调剂，你需要在这里处理
             // 4. 调用create
             reservationService.create(dto, studentId);
             // 5. 下单成功，删除 Redis 草稿，防止重复点击

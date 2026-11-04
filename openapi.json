@@ -1,0 +1,7013 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Driving Schedule 接口文档",
+    "version": "1.0.0",
+    "description": "驾校练车预约与排班调度系统。共 73 个接口，其中 internal 为服务间内部接口。\n\n标记 x-status=todo 的接口为留白项，需先实现对应 TODO 才能调通。\n网关端口 8000；各服务直连端口见每个接口的描述。"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "网关（推荐）"
+    }
+  ],
+  "tags": [
+    {
+      "name": "认证",
+      "description": "认证相关接口"
+    },
+    {
+      "name": "账号管理",
+      "description": "账号管理相关接口"
+    },
+    {
+      "name": "教练",
+      "description": "教练相关接口"
+    },
+    {
+      "name": "学员",
+      "description": "学员相关接口"
+    },
+    {
+      "name": "车辆",
+      "description": "车辆相关接口"
+    },
+    {
+      "name": "排班",
+      "description": "排班相关接口"
+    },
+    {
+      "name": "预约",
+      "description": "预约相关接口"
+    },
+    {
+      "name": "训练记录",
+      "description": "训练记录相关接口"
+    },
+    {
+      "name": "统计",
+      "description": "统计相关接口"
+    },
+    {
+      "name": "AI 助手",
+      "description": "AI 助手相关接口"
+    }
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "登录",
+        "operationId": "post_api_auth_login",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LoginResponseVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-2"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-2）\n\n依赖 TODO：B-2（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18081；经网关访问用 8000。\n\n校验账号密码并签发 JWT，载荷含 role 与 relatedId。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequestDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "查询当前登录用户",
+        "operationId": "get_api_auth_me",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserInfoVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "partial",
+        "x-todo": [
+          "B-1",
+          "B-4"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：部分依赖待实现（B-1、B-4）\n\n依赖 TODO：B-1、B-4（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18081；经网关访问用 8000。\n\n用于前端刷新页面后校验令牌是否仍然有效。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "X-User-Id",
+            "in": "header",
+            "required": true,
+            "description": "网关透传的账号 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "账号管理"
+        ],
+        "summary": "账号列表",
+        "operationId": "get_api_users",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/UserVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18080；经网关访问用 8000。\n\n支持关键词、角色、状态筛选。密码字段不返回。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "description": "账号关键词",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "description": "角色",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "状态",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "账号管理"
+        ],
+        "summary": "新增账号",
+        "operationId": "post_api_users",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18080；经网关访问用 8000。\n\n只能创建 COACH / STUDENT，且绑定的教练或学员必须存在且未被绑定。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/{id}/status": {
+      "patch": {
+        "tags": [
+          "账号管理"
+        ],
+        "summary": "启用 / 停用账号",
+        "operationId": "patch_api_users_id_status",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18080；经网关访问用 8000。\n\n管理员账号不允许停用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "账号 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusBody"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/{id}/password/reset": {
+      "patch": {
+        "tags": [
+          "账号管理"
+        ],
+        "summary": "重置账号密码",
+        "operationId": "patch_api_users_id_password_reset",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "string",
+                      "example": "123456"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18080；经网关访问用 8000。\n\n不传新密码则重置为默认密码。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "账号 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coaches": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "教练列表",
+        "operationId": "get_api_coaches",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CoachVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n支持姓名/手机号关键词与状态筛选。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "description": "姓名或手机号",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "NORMAL / LEAVE / STOPPED",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "新增教练",
+        "operationId": "post_api_coaches",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CoachVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n手机号唯一性校验。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coaches/simple": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "教练简表",
+        "operationId": "get_api_coaches_simple",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CoachSimpleVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n仅返回在职教练，用于下拉选择。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coaches/{id}": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "教练详情",
+        "operationId": "get_api_coaches_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CoachVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n教练详情",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "修改教练",
+        "operationId": "put_api_coaches_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CoachVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n修改教练",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachUpdateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coaches/{id}/status": {
+      "patch": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "变更教练状态",
+        "operationId": "patch_api_coaches_id_status",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\nNORMAL / LEAVE / STOPPED。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusBody"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/coach/by-id/{id}": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "（内部）按 ID 查教练",
+        "operationId": "get_internal_coach_by-id_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "教练精简对象"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n服务间调用，不对外暴露。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ]
+      }
+    },
+    "/internal/coach/count/name": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "（内部）按教练名查某时段剩余名额",
+        "operationId": "get_internal_coach_count_name",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 2
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按教练名查某时段剩余名额",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "教练名（支持简称）",
+            "schema": {
+              "type": "string"
+            },
+            "example": "张三"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          }
+        ]
+      }
+    },
+    "/internal/coach/get-by-name": {
+      "get": {
+        "tags": [
+          "教练"
+        ],
+        "summary": "（内部）按姓名查教练",
+        "operationId": "get_internal_coach_get-by-name",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "教练精简对象"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18082；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按姓名查教练",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "教练名",
+            "schema": {
+              "type": "string"
+            },
+            "example": "张三"
+          }
+        ]
+      }
+    },
+    "/api/students": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "学员列表",
+        "operationId": "get_api_students",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/StudentVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n学员列表",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "description": "姓名或手机号",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "按主教练筛选",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "状态",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "新增学员",
+        "operationId": "post_api_students",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StudentVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n主教练必须存在且状态正常。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coaches/{coachId}/students": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "某教练名下学员",
+        "operationId": "get_api_coaches_coachId_students",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/StudentVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n某教练名下学员",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/students/my": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "我的学员",
+        "operationId": "get_api_students_my",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/StudentVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n教练端使用，按当前登录教练过滤。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/students/simple": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "学员简表",
+        "operationId": "get_api_students_simple",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StudentSimpleVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n学员简表",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/students/{id}": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "学员详情",
+        "operationId": "get_api_students_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StudentVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n学员详情",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "修改学员",
+        "operationId": "put_api_students_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StudentVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n换主教练时校验新教练状态；应完成次数不能小于已完成次数。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentUpdateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/students/{id}/status": {
+      "patch": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "变更学员状态",
+        "operationId": "patch_api_students_id_status",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\nNORMAL / STOPPED。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusBody"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/student/by-id/{id}": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "（内部）按 ID 查学员",
+        "operationId": "get_internal_student_by-id_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "学员精简对象"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按 ID 查学员",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ]
+      }
+    },
+    "/internal/student/by-username/{username}": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "（内部）按姓名查学员列表",
+        "operationId": "get_internal_student_by-username_username",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按姓名查学员列表",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "description": "姓名关键词",
+            "schema": {
+              "type": "string"
+            },
+            "example": "李四"
+          }
+        ]
+      }
+    },
+    "/internal/student/increment/{id}": {
+      "post": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "（内部）已完成次数 +1",
+        "operationId": "post_internal_student_increment_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）已完成次数 +1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ]
+      }
+    },
+    "/internal/student/count": {
+      "get": {
+        "tags": [
+          "学员"
+        ],
+        "summary": "（内部）学员总数",
+        "operationId": "get_internal_student_count",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 120
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18083；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）学员总数"
+      }
+    },
+    "/api/vehicles": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "车辆列表",
+        "operationId": "get_api_vehicles",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VehicleVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n车辆列表",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "description": "车牌号",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "按绑定教练筛选",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "状态",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "新增车辆",
+        "operationId": "post_api_vehicles",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/VehicleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n车牌号唯一。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehicleCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicles/simple": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "车辆简表",
+        "operationId": "get_api_vehicles_simple",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/VehicleSimpleVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n车辆简表",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicles/{id}": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "车辆详情",
+        "operationId": "get_api_vehicles_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/VehicleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n车辆详情",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "车辆 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "修改车辆",
+        "operationId": "put_api_vehicles_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/VehicleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n修改车辆",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "车辆 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehicleUpdateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicles/{id}/status": {
+      "patch": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "变更车辆状态",
+        "operationId": "patch_api_vehicles_id_status",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\nNORMAL / MAINTENANCE / STOPPED。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "车辆 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusBody"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/vehicle/by-id/{id}": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "（内部）按 ID 查车辆",
+        "operationId": "get_internal_vehicle_by-id_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "车辆精简对象"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按 ID 查车辆",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "车辆 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ]
+      }
+    },
+    "/internal/vehicle/one": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "（内部）按教练取一辆可用车",
+        "operationId": "get_internal_vehicle_one",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "车辆精简对象"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按教练取一辆可用车",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "车辆状态",
+            "schema": {
+              "type": "string"
+            },
+            "example": "NORMAL"
+          }
+        ]
+      }
+    },
+    "/internal/vehicle/count": {
+      "get": {
+        "tags": [
+          "车辆"
+        ],
+        "summary": "（内部）车辆总数",
+        "operationId": "get_internal_vehicle_count",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 10
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18084；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）车辆总数"
+      }
+    },
+    "/api/schedules": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "排班列表",
+        "operationId": "get_api_schedules",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ScheduleVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n支持教练、车辆、日期区间、时段、状态组合筛选。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vehicleId",
+            "in": "query",
+            "required": false,
+            "description": "车辆 ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "scheduleDate",
+            "in": "query",
+            "required": false,
+            "description": "精确日期",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "description": "开始日期",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "description": "结束日期",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "状态",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "新增排班",
+        "operationId": "post_api_schedules",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ScheduleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n校验教练状态、时段合法性、教练重复排班、车辆时段冲突。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/available": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "查询可约排班",
+        "operationId": "get_api_schedules_available",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ScheduleAvailableVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n只返回 OPEN 且有余量的排班。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/{id}": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "排班详情",
+        "operationId": "get_api_schedules_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ScheduleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n排班详情",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "修改排班",
+        "operationId": "put_api_schedules_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ScheduleVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\nmaxStudents 不能小于已约人数。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleUpdateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/{id}/status": {
+      "patch": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "变更排班状态",
+        "operationId": "patch_api_schedules_id_status",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n已有预约时不允许直接取消排班。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusBody"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/batch": {
+      "post": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "批量生成排班",
+        "operationId": "post_api_schedules_batch",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "created": {
+                          "type": "integer",
+                          "example": 24
+                        },
+                        "skipped": {
+                          "type": "integer",
+                          "example": 4
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-24"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-24）\n\n依赖 TODO：B-24（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18085；经网关访问用 8000。\n\n按教练 × 日期区间 × 时段展开，已存在则跳过。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleBatchCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/schedule/{id}": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）按 ID 查排班",
+        "operationId": "get_internal_schedule_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按 ID 查排班",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ]
+      }
+    },
+    "/internal/schedule/one": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）按教练+日期+时段查排班",
+        "operationId": "get_internal_schedule_one",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按教练+日期+时段查排班",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          }
+        ]
+      }
+    },
+    "/internal/schedule/list-adjustable": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）查可调剂排班",
+        "operationId": "get_internal_schedule_list-adjustable",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）查可调剂排班",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          },
+          {
+            "name": "excludeCoachId",
+            "in": "query",
+            "required": false,
+            "description": "要排除的教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ]
+      }
+    },
+    "/internal/schedule/increase/{id}": {
+      "post": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）名额 +1",
+        "operationId": "post_internal_schedule_increase_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-17"
+        ],
+        "x-internal": true,
+        "description": "⚠️ 当前状态：待实现（B-17）\n\n依赖 TODO：B-17（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n条件更新，满员时返回 0。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ]
+      }
+    },
+    "/internal/schedule/decrease/{id}": {
+      "post": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）名额 -1",
+        "operationId": "post_internal_schedule_decrease_id",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-17"
+        ],
+        "x-internal": true,
+        "description": "⚠️ 当前状态：待实现（B-17）\n\n依赖 TODO：B-17（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n条件更新，不会减成负数。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "排班 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          }
+        ]
+      }
+    },
+    "/internal/schedule/count/date": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）某日排班数",
+        "operationId": "get_internal_schedule_count_date",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "example": 16
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）某日排班数",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          }
+        ]
+      }
+    },
+    "/internal/schedule/get-by-coach": {
+      "get": {
+        "tags": [
+          "排班"
+        ],
+        "summary": "（内部）按教练取排班",
+        "operationId": "get_internal_schedule_get-by-coach",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18085；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）按教练取排班",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          }
+        ]
+      }
+    },
+    "/api/reservations/options": {
+      "get": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "查询可预约方案",
+        "operationId": "get_api_reservations_options",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ReservationOptionVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-18"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-18）\n\n依赖 TODO：B-18（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18087；经网关访问用 8000。\n\n返回主教练方案；主教练不可约时附带调剂候选。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            },
+            "example": "MORNING"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations": {
+      "post": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "创建预约（抢约）",
+        "operationId": "post_api_reservations",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ReservationVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-15",
+          "B-17",
+          "B-19"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-15、B-17、B-19）\n\n依赖 TODO：B-15、B-17、B-19（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18087；经网关访问用 8000。\n\n高并发入口。锁粒度到排班，数据库条件更新兜底。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationCreateDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "管理员分页查询预约",
+        "operationId": "get_api_reservations",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReservationVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n管理员分页查询预约",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "studentName",
+            "in": "query",
+            "required": false,
+            "description": "学员姓名",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "reservationDate",
+            "in": "query",
+            "required": false,
+            "description": "预约日期",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timeSlot",
+            "in": "query",
+            "required": false,
+            "description": "时段",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "状态",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/{id}/cancel": {
+      "post": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "取消预约",
+        "operationId": "post_api_reservations_id_cancel",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "string",
+                      "example": "取消预约成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-16"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-16）\n\n依赖 TODO：B-16（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18087；经网关访问用 8000。\n\n学员只能取消自己的，管理员可取消任意。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "预约 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 500
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationCancelDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/my": {
+      "get": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "我的预约",
+        "operationId": "get_api_reservations_my",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReservationVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n我的预约",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/coach/today": {
+      "get": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "教练今日预约",
+        "operationId": "get_api_reservations_coach_today",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReservationVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n教练今日预约",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "日期，默认今天",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-01"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/{id}/complete": {
+      "post": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "完成练车",
+        "operationId": "post_api_reservations_id_complete",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "string",
+                      "example": "练车完成"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n生成训练记录并累加学员完成次数。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "预约 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 500
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingCompleteDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/{id}/absent": {
+      "post": {
+        "tags": [
+          "预约"
+        ],
+        "summary": "标记缺席",
+        "operationId": "post_api_reservations_id_absent",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "string",
+                      "example": "已标记缺席"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n只有实际带练教练可操作。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "预约 ID",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 500
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingAbsentDTO"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/training-records/my": {
+      "get": {
+        "tags": [
+          "训练记录"
+        ],
+        "summary": "我的训练记录",
+        "operationId": "get_api_training-records_my",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TrainingRecordVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18086；经网关访问用 8000。\n\n学员端。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/training-records/coach": {
+      "get": {
+        "tags": [
+          "训练记录"
+        ],
+        "summary": "教练名下训练记录",
+        "operationId": "get_api_training-records_coach",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TrainingRecordVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18086；经网关访问用 8000。\n\n教练名下训练记录",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/training-records": {
+      "get": {
+        "tags": [
+          "训练记录"
+        ],
+        "summary": "管理员查询训练记录",
+        "operationId": "get_api_training-records",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TrainingRecordVO"
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "size": {
+                          "type": "integer",
+                          "example": 10
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18086；经网关访问用 8000。\n\n管理员查询训练记录",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "studentName",
+            "in": "query",
+            "required": false,
+            "description": "学员姓名",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coachId",
+            "in": "query",
+            "required": false,
+            "description": "教练 ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "description": "开始日期",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "description": "结束日期",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/training-record/create": {
+      "post": {
+        "tags": [
+          "训练记录"
+        ],
+        "summary": "（内部）创建训练记录",
+        "operationId": "post_internal_training-record_create",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": true,
+        "description": "✅ 当前状态：可测\n\n直连端口：18086；经网关访问用 8000。\n\n内部接口：仅供服务间调用，网关不应暴露。\n\n（内部）创建训练记录",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "训练记录创建参数"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/statistics/admin/overview": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "管理端总览",
+        "operationId": "get_api_statistics_admin_overview",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminOverviewVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/admin/coach-load": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "教练负载",
+        "operationId": "get_api_statistics_admin_coach-load",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CoachLoadVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-25"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-25）\n\n依赖 TODO：B-25（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/admin/reservation-trend": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "近 7 天预约趋势",
+        "operationId": "get_api_statistics_admin_reservation-trend",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReservationTrendVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/admin/schedule-utilization": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "近 7 天排班利用率",
+        "operationId": "get_api_statistics_admin_schedule-utilization",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ScheduleUtilizationVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-25"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-25）\n\n依赖 TODO：B-25（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/admin/student-progress": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "学员进度分布",
+        "operationId": "get_api_statistics_admin_student-progress",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StudentProgressVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/admin/recent-activities": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "最近动态",
+        "operationId": "get_api_statistics_admin_recent-activities",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RecentActivityVO"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n管理端数据驾驶舱用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/coach/overview": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "教练端总览",
+        "operationId": "get_api_statistics_coach_overview",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CoachOverviewVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n教练端总览",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/statistics/student/overview": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "学员端总览",
+        "operationId": "get_api_statistics_student_overview",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，200 成功",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "操作成功"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StudentOverviewVO"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18088；经网关访问用 8000。\n\n学员端总览",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/ai/chat": {
+      "get": {
+        "tags": [
+          "AI 助手"
+        ],
+        "summary": "自然语言约车对话",
+        "operationId": "get_api_reservations_ai_chat",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "模型回复文本"
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-22",
+          "B-23"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-22、B-23）\n\n依赖 TODO：B-22、B-23（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18087；经网关访问用 8000。\n\n通过工具调用查询名额、生成预约草稿。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "description": "用户这句话",
+            "schema": {
+              "type": "string"
+            },
+            "example": "帮我约张三明天上午"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/ai/confirm": {
+      "post": {
+        "tags": [
+          "AI 助手"
+        ],
+        "summary": "确认预约草稿",
+        "operationId": "post_api_reservations_ai_confirm",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "下单结果文本"
+                }
+              }
+            }
+          }
+        },
+        "x-status": "todo",
+        "x-todo": [
+          "B-15",
+          "B-22"
+        ],
+        "x-internal": false,
+        "description": "⚠️ 当前状态：待实现（B-15、B-22）\n\n依赖 TODO：B-15、B-22（详见 TODO.md / 面试攻坚手册.md）\n\n直连端口：18087；经网关访问用 8000。\n\n凭草稿凭证真正下单，成功后草稿立即删除。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          },
+          {
+            "name": "draftId",
+            "in": "query",
+            "required": false,
+            "description": "草稿凭证",
+            "schema": {
+              "type": "string"
+            },
+            "example": "DRAFT_ab12cd34"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/ai/test/trigger": {
+      "get": {
+        "tags": [
+          "AI 助手"
+        ],
+        "summary": "AI 连通性自测",
+        "operationId": "get_api_reservations_ai_test_trigger",
+        "responses": {
+          "200": {
+            "description": "业务响应（code=200 成功）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "调试输出"
+                }
+              }
+            }
+          }
+        },
+        "x-status": "ok",
+        "x-todo": [],
+        "x-internal": false,
+        "description": "✅ 当前状态：可测\n\n直连端口：18087；经网关访问用 8000。\n\n调试用，验证模型与工具是否可用。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer <token>",
+            "description": "登录后获取的 JWT"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CoachVO": {
+        "type": "object",
+        "description": "教练",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "张三"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13800000001"
+          },
+          "licenseNo": {
+            "type": "string",
+            "description": "教练证号",
+            "example": "JL20260101"
+          },
+          "maxStudentsPerHalfDay": {
+            "type": "integer",
+            "description": "每半天最大带练人数",
+            "example": 4
+          },
+          "status": {
+            "type": "string",
+            "description": "NORMAL / LEAVE / STOPPED",
+            "example": "NORMAL"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "example": "2026-01-01T09:00:00"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "example": "2026-01-01T09:00:00"
+          }
+        }
+      },
+      "CoachSimpleVO": {
+        "type": "object",
+        "description": "教练简表",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "张三"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态",
+            "example": "NORMAL"
+          }
+        }
+      },
+      "StudentVO": {
+        "type": "object",
+        "description": "学员",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "学员 ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "李四"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13900000001"
+          },
+          "gender": {
+            "type": "string",
+            "description": "性别",
+            "example": "M"
+          },
+          "mainCoachId": {
+            "type": "integer",
+            "description": "主教练 ID",
+            "example": 1
+          },
+          "mainCoachName": {
+            "type": "string",
+            "description": "主教练姓名",
+            "example": "张三"
+          },
+          "subjectType": {
+            "type": "string",
+            "description": "SUBJECT_2 / SUBJECT_3",
+            "example": "SUBJECT_2"
+          },
+          "requiredTrainingCount": {
+            "type": "integer",
+            "description": "应完成次数",
+            "example": 8
+          },
+          "completedTrainingCount": {
+            "type": "integer",
+            "description": "已完成次数",
+            "example": 3
+          },
+          "status": {
+            "type": "string",
+            "description": "NORMAL / STOPPED",
+            "example": "NORMAL"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        }
+      },
+      "StudentSimpleVO": {
+        "type": "object",
+        "description": "学员简表",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "学员 ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "李四"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13900000001"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态",
+            "example": "NORMAL"
+          }
+        }
+      },
+      "VehicleVO": {
+        "type": "object",
+        "description": "训练车辆",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "默认绑定教练 ID",
+            "example": 1
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "车型",
+            "example": "C1"
+          },
+          "status": {
+            "type": "string",
+            "description": "NORMAL / MAINTENANCE / STOPPED",
+            "example": "NORMAL"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        }
+      },
+      "VehicleSimpleVO": {
+        "type": "object",
+        "description": "车辆简表",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "车型",
+            "example": "C1"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态",
+            "example": "NORMAL"
+          }
+        }
+      },
+      "ScheduleVO": {
+        "type": "object",
+        "description": "排班",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "排班 ID",
+            "example": 100
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "coachName": {
+            "type": "string",
+            "description": "教练姓名",
+            "example": "张三"
+          },
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "scheduleDate": {
+            "type": "string",
+            "description": "排班日期",
+            "example": "2026-11-01"
+          },
+          "timeSlot": {
+            "type": "string",
+            "description": "MORNING / AFTERNOON",
+            "example": "MORNING"
+          },
+          "maxStudents": {
+            "type": "integer",
+            "description": "最大人数",
+            "example": 4
+          },
+          "currentStudents": {
+            "type": "integer",
+            "description": "已约人数",
+            "example": 2
+          },
+          "remainCount": {
+            "type": "integer",
+            "description": "剩余名额",
+            "example": 2
+          },
+          "status": {
+            "type": "string",
+            "description": "OPEN / CLOSED / CANCELLED",
+            "example": "OPEN"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        }
+      },
+      "ScheduleAvailableVO": {
+        "type": "object",
+        "description": "可约排班",
+        "properties": {
+          "scheduleId": {
+            "type": "integer",
+            "description": "排班 ID",
+            "example": 100
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "coachName": {
+            "type": "string",
+            "description": "教练姓名",
+            "example": "张三"
+          },
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "scheduleDate": {
+            "type": "string",
+            "description": "日期",
+            "example": "2026-11-01"
+          },
+          "timeSlot": {
+            "type": "string",
+            "description": "时段",
+            "example": "MORNING"
+          },
+          "maxStudents": {
+            "type": "integer",
+            "description": "最大人数",
+            "example": 4
+          },
+          "currentStudents": {
+            "type": "integer",
+            "description": "已约人数",
+            "example": 2
+          },
+          "remainCount": {
+            "type": "integer",
+            "description": "剩余名额",
+            "example": 2
+          }
+        }
+      },
+      "ReservationVO": {
+        "type": "object",
+        "description": "预约单",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "预约 ID",
+            "example": 500
+          },
+          "studentId": {
+            "type": "integer",
+            "description": "学员 ID",
+            "example": 1
+          },
+          "studentName": {
+            "type": "string",
+            "description": "学员姓名",
+            "example": "李四"
+          },
+          "studentPhone": {
+            "type": "string",
+            "description": "学员手机号",
+            "example": "13900000001"
+          },
+          "mainCoachId": {
+            "type": "integer",
+            "description": "主教练 ID",
+            "example": 1
+          },
+          "actualCoachId": {
+            "type": "integer",
+            "description": "实际带练教练 ID",
+            "example": 2
+          },
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "scheduleId": {
+            "type": "integer",
+            "description": "排班 ID",
+            "example": 100
+          },
+          "reservationDate": {
+            "type": "string",
+            "description": "预约日期",
+            "example": "2026-11-01"
+          },
+          "timeSlot": {
+            "type": "string",
+            "description": "时段",
+            "example": "MORNING"
+          },
+          "status": {
+            "type": "string",
+            "description": "SUCCESS / COMPLETED / CANCELLED / ABSENT",
+            "example": "SUCCESS"
+          },
+          "isAdjusted": {
+            "type": "integer",
+            "description": "是否调剂：0 否 1 是",
+            "example": 0
+          },
+          "adjustReason": {
+            "type": "string",
+            "description": "调剂原因",
+            "example": ""
+          },
+          "cancelReason": {
+            "type": "string",
+            "description": "取消/缺席原因",
+            "example": ""
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "example": "2026-10-30T10:00:00"
+          },
+          "cancelTime": {
+            "type": "string",
+            "description": "取消时间"
+          }
+        }
+      },
+      "ReservationOptionVO": {
+        "type": "object",
+        "description": "可预约方案",
+        "properties": {
+          "mainCoachOption": {
+            "type": "object",
+            "description": "主教练方案",
+            "properties": {
+              "scheduleId": {
+                "type": "integer",
+                "description": "排班 ID",
+                "example": 100
+              },
+              "coachId": {
+                "type": "integer",
+                "description": "教练 ID",
+                "example": 1
+              },
+              "coachName": {
+                "type": "string",
+                "description": "教练姓名",
+                "example": "张三"
+              },
+              "vehicleId": {
+                "type": "integer",
+                "description": "车辆 ID",
+                "example": 1
+              },
+              "plateNumber": {
+                "type": "string",
+                "description": "车牌号",
+                "example": "京A12345"
+              },
+              "scheduleDate": {
+                "type": "string",
+                "description": "日期",
+                "example": "2026-11-01"
+              },
+              "timeSlot": {
+                "type": "string",
+                "description": "时段",
+                "example": "MORNING"
+              },
+              "currentStudents": {
+                "type": "integer",
+                "description": "已约人数",
+                "example": 2
+              },
+              "maxStudents": {
+                "type": "integer",
+                "description": "最大人数",
+                "example": 4
+              },
+              "remainCount": {
+                "type": "integer",
+                "description": "剩余名额",
+                "example": 2
+              },
+              "available": {
+                "type": "boolean",
+                "description": "是否可约",
+                "example": true
+              },
+              "message": {
+                "type": "string",
+                "description": "提示文案",
+                "example": "可预约"
+              }
+            }
+          },
+          "adjustOptions": {
+            "type": "array",
+            "description": "调剂候选（主教练满员时才有）",
+            "items": {
+              "type": "object",
+              "description": "调剂候选",
+              "properties": {
+                "scheduleId": {
+                  "type": "integer",
+                  "description": "排班 ID",
+                  "example": 101
+                },
+                "coachId": {
+                  "type": "integer",
+                  "description": "教练 ID",
+                  "example": 2
+                },
+                "coachName": {
+                  "type": "string",
+                  "description": "教练姓名",
+                  "example": "王五"
+                },
+                "vehicleId": {
+                  "type": "integer",
+                  "description": "车辆 ID",
+                  "example": 2
+                },
+                "plateNumber": {
+                  "type": "string",
+                  "description": "车牌号",
+                  "example": "京A54321"
+                },
+                "currentStudents": {
+                  "type": "integer",
+                  "description": "已约人数",
+                  "example": 1
+                },
+                "maxStudents": {
+                  "type": "integer",
+                  "description": "最大人数",
+                  "example": 4
+                },
+                "remainCount": {
+                  "type": "integer",
+                  "description": "剩余名额",
+                  "example": 3
+                },
+                "recommendReason": {
+                  "type": "string",
+                  "description": "推荐理由",
+                  "example": "该教练当前剩余 3 个名额"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TrainingRecordVO": {
+        "type": "object",
+        "description": "训练记录",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "记录 ID",
+            "example": 300
+          },
+          "reservationId": {
+            "type": "integer",
+            "description": "预约 ID",
+            "example": 500
+          },
+          "studentId": {
+            "type": "integer",
+            "description": "学员 ID",
+            "example": 1
+          },
+          "studentName": {
+            "type": "string",
+            "description": "学员姓名",
+            "example": "李四"
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "coachName": {
+            "type": "string",
+            "description": "教练姓名",
+            "example": "张三"
+          },
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "trainingDate": {
+            "type": "string",
+            "description": "训练日期",
+            "example": "2026-11-01"
+          },
+          "timeSlot": {
+            "type": "string",
+            "description": "时段",
+            "example": "MORNING"
+          },
+          "trainingContent": {
+            "type": "string",
+            "description": "训练内容",
+            "example": "倒车入库"
+          },
+          "coachComment": {
+            "type": "string",
+            "description": "教练点评",
+            "example": "方向感还需加强"
+          },
+          "result": {
+            "type": "string",
+            "description": "结果",
+            "example": "COMPLETED"
+          }
+        }
+      },
+      "UserVO": {
+        "type": "object",
+        "description": "账号",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "账号 ID",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "登录账号",
+            "example": "student01"
+          },
+          "role": {
+            "type": "string",
+            "description": "COACH / STUDENT / ADMIN",
+            "example": "STUDENT"
+          },
+          "relatedId": {
+            "type": "integer",
+            "description": "关联业务 ID",
+            "example": 1
+          },
+          "relatedName": {
+            "type": "string",
+            "description": "关联对象姓名",
+            "example": "李四"
+          },
+          "status": {
+            "type": "string",
+            "description": "ENABLE / DISABLE",
+            "example": "ENABLE"
+          }
+        }
+      },
+      "LoginResponseVO": {
+        "type": "object",
+        "description": "登录结果",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT 令牌",
+            "example": "eyJhbGciOiJIUzI1NiJ9.xxx"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "账号 ID",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "账号",
+            "example": "student01"
+          },
+          "role": {
+            "type": "string",
+            "description": "角色",
+            "example": "STUDENT"
+          },
+          "relatedId": {
+            "type": "integer",
+            "description": "关联业务 ID",
+            "example": 1
+          }
+        }
+      },
+      "UserInfoVO": {
+        "type": "object",
+        "description": "当前用户",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "账号 ID",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "账号",
+            "example": "student01"
+          },
+          "role": {
+            "type": "string",
+            "description": "角色",
+            "example": "STUDENT"
+          },
+          "relatedId": {
+            "type": "integer",
+            "description": "关联业务 ID",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "状态",
+            "example": "ENABLE"
+          }
+        }
+      },
+      "AdminOverviewVO": {
+        "type": "object",
+        "description": "管理端总览",
+        "properties": {
+          "totalStudents": {
+            "type": "integer",
+            "description": "学员总数",
+            "example": 120
+          },
+          "totalCoaches": {
+            "type": "integer",
+            "description": "在职教练数",
+            "example": 8
+          },
+          "totalVehicles": {
+            "type": "integer",
+            "description": "车辆总数",
+            "example": 10
+          },
+          "todayReservations": {
+            "type": "integer",
+            "description": "今日预约数",
+            "example": 32
+          },
+          "todayCompleted": {
+            "type": "integer",
+            "description": "今日完成数",
+            "example": 18
+          },
+          "todayAbsent": {
+            "type": "integer",
+            "description": "今日缺席数",
+            "example": 2
+          },
+          "todaySchedules": {
+            "type": "integer",
+            "description": "今日排班数",
+            "example": 16
+          },
+          "todayAvailableSlots": {
+            "type": "integer",
+            "description": "今日剩余名额",
+            "example": 30
+          },
+          "adjustmentCount": {
+            "type": "integer",
+            "description": "调剂次数",
+            "example": 9
+          },
+          "adjustmentRate": {
+            "type": "number",
+            "description": "调剂率（%）",
+            "example": 6.3
+          },
+          "completedTrainingCount": {
+            "type": "integer",
+            "description": "累计完成训练数",
+            "example": 460
+          }
+        }
+      },
+      "CoachLoadVO": {
+        "type": "object",
+        "description": "教练负载",
+        "properties": {
+          "coachId": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "coachName": {
+            "type": "string",
+            "description": "教练姓名",
+            "example": "张三"
+          },
+          "reservationCount": {
+            "type": "integer",
+            "description": "预约数",
+            "example": 40
+          },
+          "completedCount": {
+            "type": "integer",
+            "description": "完成数",
+            "example": 32
+          },
+          "scheduleCount": {
+            "type": "integer",
+            "description": "排班数",
+            "example": 20
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "总容量",
+            "example": 80
+          },
+          "usedCapacity": {
+            "type": "integer",
+            "description": "已用容量",
+            "example": 56
+          },
+          "utilizationRate": {
+            "type": "number",
+            "description": "利用率（%）",
+            "example": 70.0
+          }
+        }
+      },
+      "ReservationTrendVO": {
+        "type": "object",
+        "description": "预约趋势",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "日期",
+            "example": "2026-11-01"
+          },
+          "reservationCount": {
+            "type": "integer",
+            "description": "预约数",
+            "example": 30
+          },
+          "completedCount": {
+            "type": "integer",
+            "description": "完成数",
+            "example": 20
+          },
+          "cancelledCount": {
+            "type": "integer",
+            "description": "取消数",
+            "example": 3
+          },
+          "absentCount": {
+            "type": "integer",
+            "description": "缺席数",
+            "example": 1
+          }
+        }
+      },
+      "ScheduleUtilizationVO": {
+        "type": "object",
+        "description": "排班利用率",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "日期",
+            "example": "2026-11-01"
+          },
+          "totalCapacity": {
+            "type": "integer",
+            "description": "总容量",
+            "example": 40
+          },
+          "usedCapacity": {
+            "type": "integer",
+            "description": "已用容量",
+            "example": 26
+          },
+          "remainCapacity": {
+            "type": "integer",
+            "description": "剩余容量",
+            "example": 14
+          },
+          "utilizationRate": {
+            "type": "number",
+            "description": "利用率（%）",
+            "example": 65.0
+          }
+        }
+      },
+      "StudentProgressVO": {
+        "type": "object",
+        "description": "学员进度分布",
+        "properties": {
+          "rangeName": {
+            "type": "string",
+            "description": "区间名",
+            "example": "4-7 次"
+          },
+          "studentCount": {
+            "type": "integer",
+            "description": "人数",
+            "example": 40
+          }
+        }
+      },
+      "RecentActivityVO": {
+        "type": "object",
+        "description": "最近动态",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "类型",
+            "example": "RESERVATION"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题",
+            "example": "李四 预约了 张三"
+          },
+          "description": {
+            "type": "string",
+            "description": "描述",
+            "example": "2026-11-01 上午"
+          },
+          "time": {
+            "type": "string",
+            "description": "时间",
+            "example": "10-30 10:00"
+          }
+        }
+      },
+      "CoachOverviewVO": {
+        "type": "object",
+        "description": "教练端总览",
+        "properties": {
+          "todayReservations": {
+            "type": "integer",
+            "description": "今日预约",
+            "example": 8
+          },
+          "todayCompleted": {
+            "type": "integer",
+            "description": "今日完成",
+            "example": 5
+          },
+          "todayAbsent": {
+            "type": "integer",
+            "description": "今日缺席",
+            "example": 0
+          },
+          "upcomingReservations": {
+            "type": "integer",
+            "description": "待练车",
+            "example": 3
+          },
+          "completedTrainingCount": {
+            "type": "integer",
+            "description": "累计完成",
+            "example": 120
+          },
+          "adjustmentReceivedCount": {
+            "type": "integer",
+            "description": "接收调剂数",
+            "example": 4
+          }
+        }
+      },
+      "StudentOverviewVO": {
+        "type": "object",
+        "description": "学员端总览",
+        "properties": {
+          "completedTrainingCount": {
+            "type": "integer",
+            "description": "已完成次数",
+            "example": 3
+          },
+          "successReservationCount": {
+            "type": "integer",
+            "description": "有效预约数",
+            "example": 2
+          },
+          "cancelledReservationCount": {
+            "type": "integer",
+            "description": "取消数",
+            "example": 1
+          },
+          "absentCount": {
+            "type": "integer",
+            "description": "缺席数",
+            "example": 0
+          },
+          "adjustmentCount": {
+            "type": "integer",
+            "description": "调剂次数",
+            "example": 1
+          },
+          "nextReservation": {
+            "type": "string",
+            "description": "下一次练车",
+            "example": "2026-11-01 上午 · 张三"
+          },
+          "recentTrainingRecord": {
+            "type": "string",
+            "description": "最近训练",
+            "example": "倒车入库 · 张三"
+          }
+        }
+      },
+      "LoginRequestDTO": {
+        "type": "object",
+        "description": "登录请求",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "账号",
+            "example": "student01"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "CoachCreateDTO": {
+        "type": "object",
+        "description": "新增教练",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "张三"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13800000001"
+          },
+          "licenseNo": {
+            "type": "string",
+            "description": "教练证号",
+            "example": "JL20260101"
+          },
+          "maxStudentsPerHalfDay": {
+            "type": "integer",
+            "description": "每半天最大带练人数",
+            "example": 4
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "maxStudentsPerHalfDay"
+        ]
+      },
+      "CoachUpdateDTO": {
+        "type": "object",
+        "description": "修改教练",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "张三"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13800000001"
+          },
+          "licenseNo": {
+            "type": "string",
+            "description": "教练证号",
+            "example": "JL20260101"
+          },
+          "maxStudentsPerHalfDay": {
+            "type": "integer",
+            "description": "每半天最大带练人数",
+            "example": 4
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "StudentCreateDTO": {
+        "type": "object",
+        "description": "新增学员",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "李四"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13900000001"
+          },
+          "gender": {
+            "type": "string",
+            "description": "性别",
+            "example": "M"
+          },
+          "mainCoachId": {
+            "type": "integer",
+            "description": "主教练 ID",
+            "example": 1
+          },
+          "subjectType": {
+            "type": "string",
+            "description": "科目：SUBJECT_2 / SUBJECT_3",
+            "example": "SUBJECT_2"
+          },
+          "requiredTrainingCount": {
+            "type": "integer",
+            "description": "应完成练车次数",
+            "example": 8
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "mainCoachId"
+        ]
+      },
+      "StudentUpdateDTO": {
+        "type": "object",
+        "description": "修改学员",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "李四"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "13900000001"
+          },
+          "gender": {
+            "type": "string",
+            "description": "性别",
+            "example": "M"
+          },
+          "mainCoachId": {
+            "type": "integer",
+            "description": "主教练 ID",
+            "example": 1
+          },
+          "subjectType": {
+            "type": "string",
+            "description": "科目",
+            "example": "SUBJECT_2"
+          },
+          "requiredTrainingCount": {
+            "type": "integer",
+            "description": "应完成次数",
+            "example": 8
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "VehicleCreateDTO": {
+        "type": "object",
+        "description": "新增车辆",
+        "properties": {
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "默认绑定教练 ID",
+            "example": 1
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "车型",
+            "example": "C1"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "plateNumber"
+        ]
+      },
+      "VehicleUpdateDTO": {
+        "type": "object",
+        "description": "修改车辆",
+        "properties": {
+          "plateNumber": {
+            "type": "string",
+            "description": "车牌号",
+            "example": "京A12345"
+          },
+          "coachId": {
+            "type": "integer",
+            "description": "默认绑定教练 ID",
+            "example": 1
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "车型",
+            "example": "C1"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "plateNumber"
+        ]
+      },
+      "ScheduleCreateDTO": {
+        "type": "object",
+        "description": "新增排班",
+        "properties": {
+          "coachId": {
+            "type": "integer",
+            "description": "教练 ID",
+            "example": 1
+          },
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "scheduleDate": {
+            "type": "string",
+            "description": "排班日期",
+            "example": "2026-11-01"
+          },
+          "timeSlot": {
+            "type": "string",
+            "description": "MORNING / AFTERNOON",
+            "example": "MORNING"
+          },
+          "maxStudents": {
+            "type": "integer",
+            "description": "最大预约人数",
+            "example": 4
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "coachId",
+          "scheduleDate",
+          "timeSlot"
+        ]
+      },
+      "ScheduleUpdateDTO": {
+        "type": "object",
+        "description": "修改排班",
+        "properties": {
+          "vehicleId": {
+            "type": "integer",
+            "description": "车辆 ID",
+            "example": 1
+          },
+          "maxStudents": {
+            "type": "integer",
+            "description": "最大预约人数",
+            "example": 4
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        }
+      },
+      "ScheduleBatchCreateDTO": {
+        "type": "object",
+        "description": "批量排班",
+        "properties": {
+          "coachIds": {
+            "type": "array",
+            "description": "教练 ID 列表",
+            "items": {
+              "type": "integer"
+            },
+            "example": [
+              1,
+              2
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "description": "开始日期",
+            "example": "2026-11-01"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "结束日期",
+            "example": "2026-11-07"
+          },
+          "timeSlots": {
+            "type": "array",
+            "description": "时段列表",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "MORNING",
+              "AFTERNOON"
+            ]
+          },
+          "maxStudents": {
+            "type": "integer",
+            "description": "每日每时段最大人数",
+            "example": 4
+          },
+          "autoBindVehicle": {
+            "type": "boolean",
+            "description": "是否自动绑定教练默认车辆",
+            "example": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": ""
+          }
+        },
+        "required": [
+          "coachIds",
+          "startDate",
+          "endDate",
+          "timeSlots"
+        ]
+      },
+      "ReservationCreateDTO": {
+        "type": "object",
+        "description": "创建预约",
+        "properties": {
+          "scheduleId": {
+            "type": "integer",
+            "description": "排班 ID",
+            "example": 100
+          },
+          "adjusted": {
+            "type": "boolean",
+            "description": "是否调剂预约",
+            "example": false
+          },
+          "adjustReason": {
+            "type": "string",
+            "description": "调剂原因（adjusted=true 时必填）",
+            "example": ""
+          }
+        },
+        "required": [
+          "scheduleId"
+        ]
+      },
+      "ReservationCancelDTO": {
+        "type": "object",
+        "description": "取消预约",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "取消原因",
+            "example": "临时有事"
+          }
+        }
+      },
+      "TrainingCompleteDTO": {
+        "type": "object",
+        "description": "完成练车",
+        "properties": {
+          "trainingContent": {
+            "type": "string",
+            "description": "训练内容",
+            "example": "倒车入库"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "description": "练车时长（分钟）",
+            "example": 60
+          },
+          "coachRemark": {
+            "type": "string",
+            "description": "教练备注",
+            "example": "表现不错"
+          }
+        },
+        "required": [
+          "trainingContent",
+          "durationMinutes"
+        ]
+      },
+      "TrainingAbsentDTO": {
+        "type": "object",
+        "description": "标记缺席",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "缺席原因",
+            "example": "未到场"
+          }
+        }
+      },
+      "UserCreateDTO": {
+        "type": "object",
+        "description": "新增账号",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "账号",
+            "example": "student01"
+          },
+          "role": {
+            "type": "string",
+            "description": "COACH / STUDENT",
+            "example": "STUDENT"
+          },
+          "relatedId": {
+            "type": "integer",
+            "description": "绑定的教练或学员 ID",
+            "example": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "初始密码，不填默认 123456",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "username",
+          "role"
+        ]
+      },
+      "ResetPasswordDTO": {
+        "type": "object",
+        "description": "重置密码",
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "description": "新密码，不填默认 123456",
+            "example": "123456"
+          }
+        }
+      },
+      "StatusBody": {
+        "type": "object",
+        "description": "状态变更",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "目标状态",
+            "example": "NORMAL"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

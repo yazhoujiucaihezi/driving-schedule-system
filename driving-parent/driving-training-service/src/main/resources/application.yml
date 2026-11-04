@@ -14,3 +14,23 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.181.128:8848
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 5000
+
+# 打开 Sentinel 的 Feign 熔断支持，否则 @FeignClient 上的 fallback / fallbackFactory 会被静默忽略
+feign:
+  sentinel:
+    enabled: true
+
+# 服务间内部调用凭证：凡是要访问 /internal/** 的请求必须带这个头，各服务保持一致
+internal:
+  token: "DrivingInternalCall2026"
+
+# JWT 签名配置，driving-common 里的 JwtUtils 依赖这两项，各服务保持一致
+jwt:
+  secret: "DrivingSchoolSecretKey2026ForJWTTokenSigning!!"
+  expiration: 86400000

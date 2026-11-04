@@ -14,6 +14,18 @@ spring:
       host: 192.168.181.128
       port: 6379
 
+  # AI 对话功能所用的大模型：智谱 GLM（OpenAI 兼容接口）
+  # key 优先读环境变量 ZHIPU_API_KEY，没设时用占位值（仅够启动，调不通模型）
+  ai:
+    openai:
+      api-key: ${ZHIPU_API_KEY:}
+      base-url: https://open.bigmodel.cn/api/paas/v4
+      chat:
+        completions-path: /chat/completions
+        options:
+          model: glm-4-flash
+          temperature: 0.7
+
   datasource:
     url: jdbc:mysql://192.168.181.128:3306/driving_school_schedule?...
     username: root
@@ -46,3 +58,12 @@ spring:
 feign:
   sentinel:
     enabled: true
+
+# 服务间内部调用凭证：凡是要访问 /internal/** 的请求必须带这个头，各服务保持一致
+internal:
+  token: "DrivingInternalCall2026"
+
+# 本服务扫描 com.box，会把 common 里的 JwtUtils 一起装配，所以必须有密钥配置
+jwt:
+  secret: "DrivingSchoolSecretKey2026ForJWTTokenSigning!!"
+  expiration: 86400000

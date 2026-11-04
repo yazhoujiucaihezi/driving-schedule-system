@@ -8,29 +8,35 @@ import com.box.common.result.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 
-
 @Configuration
+@RequiredArgsConstructor
 public class SentinelExceptionConfig implements BlockExceptionHandler {
+
+    private final ObjectMapper objectMapper;
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
-        response.setContentType("application/json;charset=utf-8");
-        response.setStatus(200);
+        int code;
+        String message;
 
-        String msg = "系统繁忙，请稍后再试";
-
-        if (e instanceof FlowException){
-            msg = "当前抢约人数过多，请稍后再试！(限流)";
+        if (e instanceof FlowException) {
+            // 流量超阈值
+            code = 429;
+            message = "当前预约人数过多，请稍后重试";
+        } else if (e instanceof DegradeException) {
+            // 熔断
+            code = 503;
+            message = "系统繁忙，请稍后重试";
+        } else {
+            code = 429;
+            message = "请求被拒绝，请稍后重试";
         }
-        else if (e instanceof DegradeException){
-            msg = "系统服务暂时降级，请稍后再试！(熔断)";
-        }
 
-        Result result = Result.error(429, msg);
-
-        String jsonResult = new ObjectMapper().writeValueAsString(result);
-
-        response.getWriter().write(jsonResult);
+        // HTTP 状态保持 200：通信是成功的，限流是业务结果，用 code 表达
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(Result.error(code, message)));
     }
 }

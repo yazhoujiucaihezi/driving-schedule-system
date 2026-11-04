@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,7 +151,47 @@ public class CoachServiceImpl implements CoachService {
         return getCoachById(coach.getId());
     }
 
+    @Override
+    public List<CoachDTO> getAllByStatus() {
+        return toDTOList(coachMapper.selectList(
+                new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, "NORMAL")));
+    }
+
+    @Override
+    public List<CoachDTO> getAll() {
+        return toDTOList(coachMapper.selectList(null));
+    }
+
+    @Override
+    public List<CoachDTO> getByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return toDTOList(coachMapper.selectBatchIds(ids));
+    }
+
+    @Override
+    public List<CoachDTO> getByStatus(String status) {
+        List<Coach> coaches = coachMapper.selectList(
+                new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, status));
+        return toDTOList(coaches);
+    }
+
     // ==================== 内部方法 ====================
+
+    /** 实体列表转 DTO 列表 */
+    private List<CoachDTO> toDTOList(List<Coach> coaches) {
+        if (coaches == null || coaches.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<CoachDTO> list = new ArrayList<>(coaches.size());
+        for (Coach coach : coaches) {
+            CoachDTO dto = new CoachDTO();
+            BeanUtils.copyProperties(coach, dto);
+            list.add(dto);
+        }
+        return list;
+    }
 
     /** 查询教练，不存在则抛异常 */
     private Coach findCoach(Long id) {

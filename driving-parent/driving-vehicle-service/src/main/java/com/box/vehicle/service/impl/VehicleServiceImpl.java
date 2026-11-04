@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -132,6 +133,18 @@ public class VehicleServiceImpl implements VehicleService {
         VehicleDTO dto = new VehicleDTO();
         BeanUtils.copyProperties(vehicle, dto);
         return dto;
+    }
+
+    @Override
+    public List<VehicleDTO> getAll() {
+        List<Vehicle> vehicles = vehicleMapper.selectList(null);
+        List<VehicleDTO> list = new ArrayList<>(vehicles.size());
+        for (Vehicle v : vehicles) {
+            VehicleDTO dto = new VehicleDTO();
+            BeanUtils.copyProperties(v, dto);
+            list.add(dto);
+        }
+        return list;
     }
 
     @Override

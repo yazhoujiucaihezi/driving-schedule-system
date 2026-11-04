@@ -22,5 +22,8 @@ public interface VehicleService {
 
     VehicleDTO getVehicleDTOByCoachId(Long coachId, String status);
 
+    /** 查全部车辆 */
+    List<VehicleDTO> getAll();
+
     Long count();
 }

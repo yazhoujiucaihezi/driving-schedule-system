@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/internal/coach")
@@ -36,4 +37,23 @@ public class CoachInternalController {
         return Result.success(coachService.getCoachByName(name));
     }
 
+    @GetMapping("/list-all")
+    Result<List<CoachDTO>> getAll() {
+        return Result.success(coachService.getAll());
+    }
+
+    @GetMapping("/by-ids")
+    Result<List<CoachDTO>> getByIds(@RequestParam("ids") List<Long> ids) {
+        return Result.success(coachService.getByIds(ids));
+    }
+
+    @GetMapping("/by-status")
+    Result<List<CoachDTO>> getByStatus(@RequestParam("status") String status) {
+        return Result.success(coachService.getByStatus(status));
+    }
+
+    @GetMapping("/all")
+    Result<List<CoachDTO>> selectAllCountByStatus(){
+        return Result.success(coachService.getAllByStatus());
+    }
 }

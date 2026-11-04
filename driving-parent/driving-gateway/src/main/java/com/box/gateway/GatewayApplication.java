@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableDiscoveryClient
 @ComponentScan(basePackages = {"com.box.gateway", "com.box.common"})
 public class GatewayApplication {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(GatewayApplication.class, args);
     }
 }

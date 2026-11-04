@@ -12,7 +12,11 @@ public class UserContext {
 
     private static Long getLong() {
         String v = getHeader();
-        return v == null ? null : Long.valueOf(v);
+        try {
+            return v == null ? null : Long.valueOf(v);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private static String getHeader() {

@@ -7,6 +7,8 @@ import com.box.vehicle.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/vehicle")
@@ -24,6 +26,11 @@ public class VehicleInternalController {
     public Result<VehicleDTO> getByOne(@RequestParam("coachId") Long coachId,
                                        @RequestParam("status") String status) {
         return Result.success(vehicleService.getVehicleDTOByCoachId(coachId, status));
+    }
+
+    @GetMapping("/list-all")
+    public Result<List<VehicleDTO>> getAll() {
+        return Result.success(vehicleService.getAll());
     }
 
     @GetMapping("/count")

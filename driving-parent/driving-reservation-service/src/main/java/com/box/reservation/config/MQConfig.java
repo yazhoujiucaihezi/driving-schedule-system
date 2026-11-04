@@ -34,34 +34,26 @@ public class MQConfig {
 
     @Bean
     public Queue dqueue() {
-        return QueueBuilder
-                .durable(DQUEUE)
-                .ttl(300000)
-                .deadLetterExchange(DEXCHANGE)
-                .deadLetterRoutingKey(ABSENT_KEY)
-                .build();
+        return QueueBuilder.durable(DQUEUE).ttl(1800000).deadLetterExchange(DEXCHANGE).deadLetterRoutingKey(ABSENT_KEY).build();
     }
 
     @Bean
     public Exchange dexchange() {
-        return ExchangeBuilder.topicExchange(DEXCHANGE).durable(true).build();
+        return ExchangeBuilder.topicExchange(DEXCHANGE).build();
     }
-    @Bean
-    public Binding abinding() {
-        return BindingBuilder
-                .bind(aqueue())
-                .to(dexchange())
-                .with(ABSENT_KEY)
-                .noargs();
-    }
+
     @Bean
     public Queue aqueue() {
         return QueueBuilder.durable(AQUEUE).build();
     }
 
     @Bean
+    public Binding abinding() {
+        return BindingBuilder.bind(aqueue()).to(dexchange()).with(ABSENT_KEY).noargs();
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
-
 }

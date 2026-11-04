@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,19 +58,51 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public List<CoachLoadVO> coachLoad() {
-        return coachMapper.selectList(new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, "NORMAL")).stream().map(c -> {
-            CoachLoadVO v = new CoachLoadVO();
-            v.setCoachId(c.getId()); v.setCoachName(c.getName());
-            long resCount = reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>().eq(Reservation::getActualCoachId, c.getId()));
-            long compCount = reservationMapper.selectCount(new LambdaQueryWrapper<Reservation>().eq(Reservation::getActualCoachId, c.getId()).eq(Reservation::getStatus, "COMPLETED"));
-            long schedCount = scheduleMapper.selectCount(new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getCoachId, c.getId()));
-            long cap = scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getCoachId, c.getId())).stream().mapToLong(CoachSchedule::getMaxStudents).sum();
-            long used = scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getCoachId, c.getId())).stream().mapToLong(CoachSchedule::getCurrentStudents).sum();
-            v.setReservationCount(resCount); v.setCompletedCount(compCount);
-            v.setScheduleCount(schedCount); v.setCapacity(cap); v.setUsedCapacity(used);
-            v.setUtilizationRate(cap > 0 ? Math.round(used * 1000.0 / cap) / 10.0 : 0);
-            return v;
-        }).sorted((a, b) -> Double.compare(b.getUtilizationRate(), a.getUtilizationRate())).collect(Collectors.toList());
+        List<CoachLoadVO> vos = new ArrayList<>();
+        List<Coach> normal = coachMapper.selectList(
+                new LambdaQueryWrapper<Coach>().eq(Coach::getStatus, "NORMAL")
+        );
+        for (Coach coach : normal) {
+            CoachLoadVO vo = new CoachLoadVO();
+            Long scheduleCount = scheduleMapper.selectCount(
+                    new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getCoachId, coach.getId())
+            );
+            List<CoachSchedule> coachSchedules = scheduleMapper.selectList(
+                    new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getCoachId, coach.getId())
+            );
+
+            Integer currentCount = 0;
+            Integer maxCount = 0;
+            for (CoachSchedule coachSchedule : coachSchedules) {
+                currentCount += coachSchedule.getCurrentStudents();
+                maxCount += coachSchedule.getMaxStudents();
+            }
+            Long completed = reservationMapper.selectCount(
+                    new LambdaQueryWrapper<Reservation>()
+                            .eq(Reservation::getStatus, "COMPLETED")
+                            .eq(Reservation::getActualCoachId,coach.getId())
+            );
+            Long reservationCount = reservationMapper.selectCount(
+                    new LambdaQueryWrapper<Reservation>()
+                            .ne(Reservation::getStatus, "CANCELLED")
+                            .eq(Reservation::getActualCoachId,coach.getId())
+            );
+            vo.setCoachId(coach.getId());
+            vo.setCoachName(coach.getName());
+            vo.setScheduleCount(scheduleCount);
+            vo.setCompletedCount(completed);
+            vo.setCapacity(maxCount);
+            vo.setUsedCapacity(currentCount);
+            vo.setReservationCount(reservationCount);
+            if (maxCount == 0){
+                vo.setUtilizationRate(0);
+            }else {
+                vo.setUtilizationRate((double) Math.round((double)currentCount / maxCount*100 * 100) / 100);
+            }
+            vos.add(vo);
+        }
+        vos.sort(Comparator.comparing(CoachLoadVO::getUtilizationRate).reversed());
+        return vos;
     }
 
     @Override
@@ -92,19 +123,35 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public List<ScheduleUtilizationVO> scheduleUtilization() {
-        List<ScheduleUtilizationVO> list = new ArrayList<>();
-        for (int i = 6; i >= 0; i--) {
-            LocalDate d = LocalDate.now().minusDays(i);
-            var schedules = scheduleMapper.selectList(new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getScheduleDate, d));
-            long cap = schedules.stream().mapToLong(CoachSchedule::getMaxStudents).sum();
-            long used = schedules.stream().mapToLong(CoachSchedule::getCurrentStudents).sum();
-            ScheduleUtilizationVO v = new ScheduleUtilizationVO();
-            v.setDate(d); v.setTotalCapacity(cap); v.setUsedCapacity(used);
-            v.setRemainCapacity(Math.max(0, cap - used));
-            v.setUtilizationRate(cap > 0 ? Math.round(used * 1000.0 / cap) / 10.0 : 0);
-            list.add(v);
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(6);
+        List<ScheduleUtilizationVO> vos = new ArrayList<>();
+        while (!startDate.isAfter(today)){
+            ScheduleUtilizationVO vo = new ScheduleUtilizationVO();
+            Integer total = 0;
+            Integer used = 0;
+            List<CoachSchedule> coachSchedules = scheduleMapper.selectList(
+                    new LambdaQueryWrapper<CoachSchedule>().eq(CoachSchedule::getScheduleDate, startDate)
+            );
+
+            for (CoachSchedule coachSchedule : coachSchedules) {
+                total += coachSchedule.getMaxStudents();
+                used += coachSchedule.getCurrentStudents();
+            }
+
+            vo.setTotalCapacity(total);
+            vo.setUsedCapacity(used);
+            vo.setDate(startDate);
+            vo.setRemainCapacity(total - used);
+            if (total == 0){
+                vo.setUtilizationRate(0);
+            }else {
+                vo.setUtilizationRate((double) Math.round((double)used / total*100 * 100) / 100);
+            }
+            vos.add(vo);
+            startDate = startDate.plusDays(1);
         }
-        return list;
+        return vos;
     }
 
     @Override

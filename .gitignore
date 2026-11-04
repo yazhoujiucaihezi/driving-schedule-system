@@ -1,5 +1,5 @@
 # Java
-backend/target/
+target/
 *.class
 *.jar
 *.war
@@ -10,12 +10,12 @@ backend/target/
 *.iws
 *.ipr
 
-# Ç°¶Ë
+# Ç°
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
-# ÈÕÖ¾
+# Ö¾
 *.log
 logs/
 
@@ -23,5 +23,9 @@ logs/
 .DS_Store
 Thumbs.db
 
-# »·¾³ÅäÖÃ
+# 
 backend/src/main/resources/application-dev.yml
+
+# ä¾èµ–ä¸æ„å»ºäº§ç‰©
+node_modules/
+dist/

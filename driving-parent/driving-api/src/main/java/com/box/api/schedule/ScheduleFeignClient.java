@@ -3,6 +3,7 @@ package com.box.api.schedule;
 import com.box.api.fallback.ScheduleFeignClientFallback;
 import com.box.common.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,12 +18,12 @@ public interface ScheduleFeignClient {
     @GetMapping("/internal/schedule/one")
     Result<ScheduleDTO> getOne(
             @RequestParam("coachId") Long coachId,
-            @RequestParam("date") LocalDate date,
+            @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
             @RequestParam("timeSlot") String timeSlot);
 
     @GetMapping("/internal/schedule/list-adjustable")
     Result<List<ScheduleDTO>> listAdjustable(
-            @RequestParam("date") LocalDate date,
+            @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
             @RequestParam("timeSlot") String timeSlot,
             @RequestParam("excludeCoachId") Long excludeCoachId);
 
@@ -33,5 +34,7 @@ public interface ScheduleFeignClient {
     Result<Integer> decreaseCurrentStudents(@PathVariable("id") Long id);
 
     @GetMapping("/internal/schedule/get-by-coach")
-    Result<ScheduleDTO> getByCoach(@RequestParam Long coachId, @RequestParam LocalDate date, @RequestParam String timeSlot);
+    Result<ScheduleDTO> getByCoach(@RequestParam("coachId") Long coachId,
+                                   @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+                                   @RequestParam("timeSlot") String timeSlot);
 }

@@ -9,64 +9,74 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class JwtGlobalFilter implements GlobalFilter, Ordered {
 
     private final JwtUtils jwtUtils;
+    private static final Set<String> WHITE_LIST = Set.of("/api/auth/login");
 
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 1. 获取请求路径
-        String path = exchange.getRequest().getURI().getPath();
-        // 判断是否为白名单
-        if (path.equals("/api/auth/login")) {
+        String path = exchange.getRequest().getPath().value();
+        if (WHITE_LIST.contains(path)){
             return chain.filter(exchange);
         }
-        // 获取 Authorization 头
         String authorization = exchange.getRequest().getHeaders().getFirst("Authorization");
-        // 判断 Authorization 头是否存在且格式是否正确
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return unauthorized(exchange);
-        }
-        // 取出token
-        String token = authorization.substring(7);
-        // 验证 token
-            if (!jwtUtils.validateToken(token)){
-                return unauthorized(exchange);
-            }
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            String token = authorization.substring(7);
             Claims claims = jwtUtils.parseToken(token);
-            Long userId = claims.get("userId", Long.class);
-            String role = claims.get("role", String.class);
+            if (claims == null) {
+                return unauthorized(exchange, "登录已过期或身份无效");
+            }
 
-            // 4. 塞到请求头
+            String userId = String.valueOf(claims.get("userId", Long.class));
+            String role   = claims.get("role", String.class);
+            Object relatedId = claims.get("relatedId");
+
+            if (userId == null || role == null) {
+                return unauthorized(exchange, "身份信息不完整");
+            }
+
             ServerWebExchange mutated = exchange.mutate()
-                    .request(r -> r
-                            .header("X-User-Id", String.valueOf(userId))
-                            .header("X-User-Role", role)
-                            .header("X-User-RelatedId", String.valueOf(claims.get("relatedId", Long.class)))
-                    ).build();
-
+                    .request(r -> r.headers(h -> {
+                        h.set("X-User-Id", userId);
+                        h.set("X-User-Role", role);
+                        if (relatedId != null) {
+                            h.set("X-User-RelatedId", String.valueOf(relatedId));
+                        }
+                    }))
+                    .build();
             return chain.filter(mutated);
 
-    }
-
-    private Mono<Void> unauthorized(ServerWebExchange exchange) {
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        String body = "{\"code\":401,\"message\":\"未登录或 Token 失效\",\"data\":null}";
-        DataBuffer dataBuffer = exchange.getResponse().bufferFactory().wrap(body.getBytes());
-        return exchange.getResponse().writeWith(Mono.just(dataBuffer));
+        }
+        return unauthorized(exchange,"请先登录");
     }
 
     @Override
     public int getOrder() {
         return -100;
     }
-}
 
+    private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        String json = "{\"code\":401,\"message\":\"" + message + "\",\"data\":null}";
+        DataBuffer buffer = response.bufferFactory()
+                .wrap(json.getBytes(StandardCharsets.UTF_8));
+
+        return response.writeWith(Mono.just(buffer));
+    }
+
+}

@@ -73,14 +73,17 @@ const sendMessage = async () => {
     })
 
     // 后端如果直接返回字符串，用 res.data；如果包了一层 Result，用 res.data.data
-    const aiReply = res.data
+    const aiReply = typeof res.data === 'string' ? res.data : JSON.stringify(res.data)
 
-    // 🚨 核心：用正则提取 [DRAFT_xxx] 中的凭证号
-    const match = aiReply.match(/\[(DRAFT_[a-zA-Z0-9]+)]/)
+    // 🚨 核心：用正则提取 [DRAFT_xxx] 中的凭证号，凭证是 UUID（含横杠），字符集要带上 '-'
+    const match = aiReply.match(/\[DRAFT_([a-zA-Z0-9-]+)\]/)
     const draftId = match ? match[1] : undefined
 
+    // 展示时去掉 [DRAFT_xxx] 标记，用户不需要看到这串凭证
+    const cleanReply = aiReply.replace(/\[DRAFT_[a-zA-Z0-9-]+\]/g, '').trim()
+
     // 添加 AI 回复，如果抓到了 draftId，就带上
-    chatList.value.push({ role: 'assistant', content: aiReply, draftId })
+    chatList.value.push({ role: 'assistant', content: cleanReply, draftId })
 
   } catch (error) {
     chatList.value.push({ role: 'assistant', content: '网络异常，请稍后再试。' })

@@ -12,3 +12,8 @@ spring:
     port: 5672
     username: box
     password: 123
+
+# JWT 签名配置，driving-common 里的 JwtUtils 依赖这两项，各服务保持一致
+jwt:
+  secret: "DrivingSchoolSecretKey2026ForJWTTokenSigning!!"
+  expiration: 86400000

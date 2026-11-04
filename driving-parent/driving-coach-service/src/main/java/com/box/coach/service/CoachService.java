@@ -39,4 +39,15 @@ public interface CoachService {
     Long getCountByName(String name, LocalDate date, String timeSlot);
 
     CoachDTO getCoachByName(String name);
+
+    List<CoachDTO> getAllByStatus();
+
+    /** 查全部教练，不区分状态 */
+    List<CoachDTO> getAll();
+
+    /** 按状态查教练，status 传 NORMAL / STOPPED 等 */
+    List<CoachDTO> getByStatus(String status);
+
+    /** 按 id 列表批量查教练 */
+    List<CoachDTO> getByIds(List<Long> ids);
 }

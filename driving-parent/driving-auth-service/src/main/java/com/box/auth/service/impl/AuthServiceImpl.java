@@ -11,6 +11,7 @@ import com.box.common.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * 认证业务实现
@@ -38,47 +39,29 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public LoginResponseVO login(LoginRequestDTO dto) {
-        // 1. 查询用户
-//        SysUser user = sysUserMapper.selectOne(
-//                new LambdaQueryWrapper<SysUser>()
-//                        .eq(SysUser::getUsername, dto.getUsername())
-//        );
+
 
         Result<UserDTO> result = userFeignClient.getByUsername(dto.getUsername());
-        UserDTO user = result.getData();
-
-
-        // 2. 校验账号是否存在
-        if (result.getData() == null) {
-            throw new BusinessException("账号或密码错误");
+        if (result == null || result.getCode() == 503){
+            throw new BusinessException(503,"账号服务暂时不可用，请稍后重试");
         }
 
-        // 3. 校验账号是否被禁用
+        if (result.getCode() != 200) {
+            throw new BusinessException(result.getCode(), result.getMessage());
+        }
+
+        UserDTO user =result.getData();
+        if (user == null || !StringUtils.hasText(dto.getPassword()) || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new BusinessException("用户不存在或密码错误");
+        }
+
         if ("DISABLE".equals(user.getStatus())) {
-            throw new BusinessException("该账号已被禁用，请联系管理员");
+                throw new BusinessException("用户被禁用");
         }
 
-        // 4. 使用 BCrypt 校验密码（数据库中存储的是 BCrypt 密文）
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new BusinessException("账号或密码错误");
-        }
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole(), user.getRelatedId());
+        return new LoginResponseVO(token,user.getId(),user.getUsername(),user.getRole(),user.getRelatedId());
 
-        // 5. 生成 JWT Token
-        String token = jwtUtils.generateToken(
-                user.getId(),
-                user.getUsername(),
-                user.getRole(),
-                user.getRelatedId()
-        );
-
-        // 6. 组装响应
-        return LoginResponseVO.builder()
-                .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
-                .relatedId(user.getRelatedId())
-                .build();
     }
 
     /**

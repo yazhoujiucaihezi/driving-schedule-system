@@ -9,40 +9,75 @@ spring:
       discovery:
         server-addr: 192.168.181.128:8848
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
       routes:
-        - id: user-service
-          uri: lb://driving-user-service     # lb = load balance
-          predicates:
-            - Path=/api/users/**
-        - id: auth-service
+        # 认证：登录 / 刷新用户信息
+        - id: driving-auth-service
           uri: lb://driving-auth-service
           predicates:
-            - Path=/api/auth/**
-        - id: coach-service
+            - Path=/api/auth,/api/auth/**
+
+        # 账号管理
+        - id: driving-user-service
+          uri: lb://driving-user-service
+          predicates:
+            - Path=/api/users,/api/users/**
+
+        # 学员
+        # 注意 order: -1 —— StudentController 挂在 /api 下，有两个前缀：
+        #   /api/students/**            学员自身的增删改查
+        #   /api/coaches/{coachId}/students   教练名下学员
+        # 第二个前缀会被下面的 /api/coaches/**（教练服务）吃掉，所以本路由必须排在教练之前。
+        - id: driving-student-service
+          uri: lb://driving-student-service
+          order: -1
+          predicates:
+            - Path=/api/students,/api/students/**,/api/coaches/*/students
+
+        # 教练
+        - id: driving-coach-service
           uri: lb://driving-coach-service
           predicates:
-            - Path=/api/coaches/**
-        - id: student-service
-          uri: lb://driving-student-service
-          predicates:
-            - Path=/api/students/**
-        - id: vehicle-service
+            - Path=/api/coaches,/api/coaches/**
+
+        # 车辆
+        - id: driving-vehicle-service
           uri: lb://driving-vehicle-service
           predicates:
-            - Path=/api/vehicles/**
-        - id: schedule-service
+            - Path=/api/vehicles,/api/vehicles/**
+
+        # 排班
+        - id: driving-schedule-service
           uri: lb://driving-schedule-service
           predicates:
-            - Path=/api/schedules/**
-        - id: training-record-service
+            - Path=/api/schedules,/api/schedules/**
+
+        # 训练记录
+        - id: driving-training-service
           uri: lb://driving-training-service
           predicates:
-            - Path=/api/training-records/**
-        - id: reservation-service
+            - Path=/api/training-records,/api/training-records/**
+
+        # 预约（含 /api/reservations/ai/** 的 AI 对话）
+        - id: driving-reservation-service
           uri: lb://driving-reservation-service
           predicates:
-            - Path=/api/reservations/**
-        - id: statistics-service
+            - Path=/api/reservations,/api/reservations/**
+
+        # 统计驾驶舱
+        - id: driving-statistics-service
           uri: lb://driving-statistics-service
           predicates:
-            - Path=/api/statistics/**
+            - Path=/api/statistics,/api/statistics/**
+
+
+jwt:
+  secret: "DrivingSchoolSecretKey2026ForJWTTokenSigning!!"
+  expiration: 86400000

@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.box.auth", "com.box.common", "com.box.common.web"})
+@ComponentScan(basePackages = {"com.box.auth", "com.box.common", "com.box.common.web", "com.box.api"})
 @EnableFeignClients(basePackages = "com.box.api")
 public class AuthServiceApplication {
     public static void main(String[] args) {

@@ -99,11 +99,14 @@ const sendMessage = async () => {
 
     const aiReply = typeof res.data === 'string' ? res.data : JSON.stringify(res.data)
 
-    // 匹配草稿
-    const match = aiReply.match(/\[(DRAFT_[a-zA-Z0-9]+)]/)
+    // 匹配草稿，凭证是 UUID（含横杠），字符集要带上 '-'
+    const match = aiReply.match(/\[DRAFT_([a-zA-Z0-9-]+)\]/)
     const draftId = match ? match[1] : undefined
 
-    chatList.value.push({ role: 'assistant', content: aiReply, draftId })
+    // 展示时去掉 [DRAFT_xxx] 标记，用户不需要看到这串凭证
+    const cleanReply = aiReply.replace(/\[DRAFT_[a-zA-Z0-9-]+\]/g, '').trim()
+
+    chatList.value.push({ role: 'assistant', content: cleanReply, draftId })
 
   } catch (error: any) {
     const errorMsg = error.response?.data?.message || error.message || '网络异常'
