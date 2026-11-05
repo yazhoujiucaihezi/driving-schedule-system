@@ -18,6 +18,7 @@ import com.box.common.result.Result;
 import com.box.reservation.common.constant.RabbitMQConstants;
 import com.box.reservation.common.constant.RedisKeyConstants;
 import com.box.reservation.common.constant.ReservationStatusConstants;
+import com.box.reservation.common.constant.ScheduleTimeConstants;
 import com.box.reservation.dto.ReservationCancelDTO;
 import com.box.reservation.dto.ReservationCreateDTO;
 import com.box.reservation.dto.ReservationQueryDTO;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -225,8 +227,18 @@ public class ReservationServiceImpl implements ReservationService {
 
                 reservationMapper.insert(reservation);
 
+                LocalDateTime deadline = LocalDateTime.of(
+                        reservation.getReservationDate(), ScheduleTimeConstants.startTimeOf(reservation.getTimeSlot())
+                                .plusMinutes(ScheduleTimeConstants.ABSENT_GRACE_MINUTES));
+                long delay = Math.max(Duration.between(LocalDateTime.now(), deadline).toMillis(), 0L);
+
                 rabbitTemplate.convertAndSend(RabbitMQConstants.EXCHANGE_RESERVATION_SUCCESS,RabbitMQConstants.ROUTING_KEY_RESERVATION_SUCCESS,reservation.getId());
-                rabbitTemplate.convertAndSend(RabbitMQConstants.QUEUE_RESERVATION_DELAY, Map.of("reservationId", reservation.getId()));
+                rabbitTemplate.convertAndSend(RabbitMQConstants.EXCHANGE_RESERVATION_DELAY,RabbitMQConstants.ROUTING_KEY_RESERVATION_ABSENT,
+                        Map.of(RabbitMQConstants.MSG_KEY_RESERVATION_ID, reservation.getId()),
+                        message -> {
+                            message.getMessageProperties().setDelay((int) Math.min(delay,Integer.MAX_VALUE));
+                            return message;
+                        });
             });
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -500,6 +512,4 @@ public class ReservationServiceImpl implements ReservationService {
         option.setRemainCount(s.getMaxStudents() - s.getCurrentStudents());
         return option;
     }
-
-
 }

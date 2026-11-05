@@ -42,6 +42,34 @@ public final class RabbitMQConstants {
     /** 延迟队列：投递时设置消息 TTL，到期后由死信交换机转走 */
     public static final String QUEUE_RESERVATION_DELAY = "reservation.delay.queue";
 
+    // ==================== 延迟投递（超时缺席） ====================
+
+    /**
+     * 延迟交换机，类型为 x-delayed-message，依赖 rabbitmq_delayed_message_exchange 插件。
+     * <p>
+     * 与「TTL 队列 + 死信交换机」的区别：TTL 方案只检查队头消息是否过期，
+     * 当同一队列里消息的过期时间跨度很大时（今天下午的课和明天早上的课混在一起），
+     * 后排消息会被前排堵住，实际触发时间不可控。延迟交换机由插件内部时间轮调度，
+     * 每条消息按自己的 x-delay 独立投递。
+     * </p>
+     */
+    public static final String EXCHANGE_RESERVATION_DELAY = "reservation.delay.exchange";
+
+    /** 延迟交换机类型：由 rabbitmq_delayed_message_exchange 插件注册的自定义类型 */
+    public static final String EXCHANGE_TYPE_DELAYED = "x-delayed-message";
+
+    /** 延迟交换机的参数名：指定它内部按哪种路由规则分发消息 */
+    public static final String DELAYED_TYPE_PARAM = "x-delayed-type";
+
+    /** 延迟交换机内部分发规则：按路由键精确匹配（我们的缺席路由键是固定值） */
+    public static final String DELAYED_TYPE_DIRECT = "direct";
+
+    /**
+     * 缺席消息体里的订单 ID 键名。
+     * 生产端写入、消费端读取，两边改一处漏一处不会报错，只会静默读不到。
+     */
+    public static final String MSG_KEY_RESERVATION_ID = "reservationId";
+
     // ==================== 死信（超时缺席） ====================
 
     /** 死信交换机 */
