@@ -44,7 +44,11 @@
   <img width="85%" src="https://github.com/user-attachments/assets/8c31e2f1-1d3f-4074-b615-c4c56c02bdd9" alt="学员端排班预约与调剂" />
   <br/><br/>
   <img width="85%" src="https://github.com/user-attachments/assets/463ec2fd-9556-4dbf-a281-1e538ade45f5" alt="Nacos 服务注册列表" />
+  <br/><br/>
+  <img width="85%" src="https://github.com/user-attachments/assets/48f1a5c8-b33f-4887-bbd6-79bafe9f76e1" alt="AI自动预约功能" />
+
 </div>
+
 
 ---
 
